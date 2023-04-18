@@ -2,6 +2,7 @@
 
 #include "SDL.h"
 #include "Player.h"
+#include "Projectile.h"
 
 class Game
 {
@@ -27,6 +28,6 @@ public:
 	void handlePlayerInput();
 
 	void update();
-	void render();
 
+	void render();
 };

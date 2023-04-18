@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "SDL_image.h"
+#include "iostream"
 
 Game::Game(const char* title, int width, int height)
 {
@@ -16,7 +17,8 @@ Game::Game(const char* title, int width, int height)
 void Game::init()
 {
 	SDL_Texture* playerTex = loadTexture("assets/player.png");
-	player = Player(0, 0.9*winHeight, 64, 32, 125, playerTex);
+	SDL_Texture* projectileTex = loadTexture("assets/player_projectile.png");
+	player = Player(0, 0.9*winHeight, 64, 32, 125, playerTex, projectileTex);
 }
 
 SDL_Texture* Game::loadTexture(const char* imgPath)
@@ -48,6 +50,9 @@ void Game::handlePlayerInput()
 		case SDLK_RIGHT:
 			player.xvel = player.speed;
 			break;
+		case SDLK_SPACE:
+			player.shoot();
+			break;
 		default:
 			break;
 		}
@@ -68,6 +73,13 @@ void Game::handlePlayerInput()
 void Game::update()
 {
 	player.update();
+	for (int i = 0; i < player.projectiles.size(); ++i) {
+		Projectile* ptr = player.projectiles[i];
+		if (ptr->destRect.y < 0) {
+			delete ptr;
+			player.projectiles.erase(player.projectiles.begin() + i);
+		}
+	}
 }
 
 void Game::render()
@@ -75,6 +87,9 @@ void Game::render()
 	SDL_RenderClear(renderer);
 
 	SDL_RenderCopyEx(renderer, player.texture, &player.srcRect, &player.destRect, NULL, NULL, SDL_FLIP_NONE);
+	for (auto p : player.projectiles) {
+		SDL_RenderCopyEx(renderer, p->texture, NULL, &p->destRect, NULL, NULL, SDL_FLIP_NONE);
+	}
 
 	SDL_RenderPresent(renderer);
 }
