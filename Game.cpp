@@ -73,6 +73,15 @@ void Game::handlePlayerInput()
 void Game::update()
 {
 	player.update();
+	// Check if player has moved out of bounds and move them back if necessary
+	if (player.destRect.x < 0) {
+		player.xpos = player.destRect.x = 0;
+	}
+	else if (player.destRect.x + player.destRect.w > winWidth) {
+		player.xpos = player.destRect.x = winWidth - player.destRect.w;
+	}
+
+	// Delete any projectile objects which have moved out of bounds
 	for (int i = 0; i < player.projectiles.size(); ++i) {
 		Projectile* ptr = player.projectiles[i];
 		if (ptr->destRect.y < 0) {
