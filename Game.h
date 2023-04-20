@@ -3,6 +3,8 @@
 #include "SDL.h"
 #include "Player.h"
 #include "Projectile.h"
+#include <vector>
+#include "Invader.h"
 
 class Game
 {
@@ -20,6 +22,8 @@ public:
 	bool gameOver = false;
 
 	Player player;
+	Invader invader;
+	int invaderShotTimeStamp;
 
 	void init();
 	SDL_Texture* loadTexture(const char* imgPath);

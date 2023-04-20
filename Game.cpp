@@ -19,6 +19,12 @@ void Game::init()
 	SDL_Texture* playerTex = loadTexture("assets/player.png");
 	SDL_Texture* projectileTex = loadTexture("assets/player_projectile.png");
 	player = Player(0, 0.9*winHeight, 64, 32, 125, playerTex, projectileTex);
+
+	SDL_Texture* invaderTex = loadTexture("assets/invader.png");
+	SDL_Texture* invaderProjectileTex = loadTexture("assets/invader_projectile.png");
+	invader = Invader(0.5 * winWidth, 0.5 * winHeight, 32, 32, invaderTex, invaderProjectileTex);
+	invaderShotTimeStamp = SDL_GetTicks();
+
 }
 
 SDL_Texture* Game::loadTexture(const char* imgPath)
@@ -89,6 +95,27 @@ void Game::update()
 			player.projectiles.erase(player.projectiles.begin() + i);
 		}
 	}
+
+	invader.update();
+
+	for (int i = 0; i < invader.projectiles.size(); ++i) {
+		Projectile* ptr = invader.projectiles[i];
+		if (ptr->destRect.y > winHeight) {
+			delete ptr;
+			invader.projectiles.erase(invader.projectiles.begin() + i);
+		}
+	}
+
+	bool doInvaderShot = static_cast<float>(SDL_GetTicks() - invaderShotTimeStamp) / 1000 > 1.0;
+	if (doInvaderShot) {
+		invader.shoot();
+		invaderShotTimeStamp = SDL_GetTicks();
+	}
+}
+
+bool AABBcollision(Projectile* p, SDL_Rect targetRect)
+{
+	return true;
 }
 
 void Game::render()
@@ -97,6 +124,11 @@ void Game::render()
 
 	SDL_RenderCopyEx(renderer, player.texture, &player.srcRect, &player.destRect, NULL, NULL, SDL_FLIP_NONE);
 	for (auto p : player.projectiles) {
+		SDL_RenderCopyEx(renderer, p->texture, NULL, &p->destRect, NULL, NULL, SDL_FLIP_NONE);
+	}
+
+	SDL_RenderCopyEx(renderer, invader.texture, &invader.srcRect, &invader.destRect, NULL, NULL, SDL_FLIP_NONE);
+	for (auto p : invader.projectiles) {
 		SDL_RenderCopyEx(renderer, p->texture, NULL, &p->destRect, NULL, NULL, SDL_FLIP_NONE);
 	}
 
