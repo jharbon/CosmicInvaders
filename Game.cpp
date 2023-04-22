@@ -87,10 +87,15 @@ void Game::update()
 		player.xpos = player.destRect.x = winWidth - player.destRect.w;
 	}
 
-	// Delete any projectile objects which have moved out of bounds
 	for (int i = 0; i < player.projectiles.size(); ++i) {
 		Projectile* ptr = player.projectiles[i];
+		// Delete any projectile if it has moved out of bounds
 		if (ptr->destRect.y < 0) {
+			delete ptr;
+			player.projectiles.erase(player.projectiles.begin() + i);
+		}
+		// Check if projectile has hit the invader
+		else if (AABBcollision(ptr->destRect, invader.destRect)) {
 			delete ptr;
 			player.projectiles.erase(player.projectiles.begin() + i);
 		}
@@ -100,7 +105,13 @@ void Game::update()
 
 	for (int i = 0; i < invader.projectiles.size(); ++i) {
 		Projectile* ptr = invader.projectiles[i];
+		// Delete projectile if it has moved out of bounds
 		if (ptr->destRect.y > winHeight) {
+			delete ptr;
+			invader.projectiles.erase(invader.projectiles.begin() + i);
+		}
+		// Check if projectile has hit the player
+		else if (AABBcollision(ptr->destRect, player.destRect)) {
 			delete ptr;
 			invader.projectiles.erase(invader.projectiles.begin() + i);
 		}
@@ -113,9 +124,18 @@ void Game::update()
 	}
 }
 
-bool AABBcollision(Projectile* p, SDL_Rect targetRect)
+bool Game::AABBcollision(SDL_Rect projectileRect, SDL_Rect targetRect)
 {
-	return true;
+	if (projectileRect.x < targetRect.x + targetRect.w &&
+		projectileRect.x + projectileRect.w > targetRect.x &&
+		projectileRect.y < targetRect.y + targetRect.h &&
+		projectileRect.y + projectileRect.h > targetRect.y) {
+		return true;
+	}
+	else {
+		return false;
+	}
+	
 }
 
 void Game::render()

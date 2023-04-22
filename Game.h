@@ -32,6 +32,7 @@ public:
 	void handlePlayerInput();
 
 	void update();
+	static bool AABBcollision(SDL_Rect projectileRect, SDL_Rect targetRect);
 
 	void render();
 };
