@@ -117,8 +117,10 @@ void Game::update()
 		}
 	}
 
-	bool doInvaderShot = static_cast<float>(SDL_GetTicks() - invaderShotTimeStamp) / 1000 > 1.0;
-	if (doInvaderShot) {
+	bool invaderShotReady = static_cast<float>(SDL_GetTicks() - invaderShotTimeStamp) / 1000 > 1.0;
+	int invaderMidPos = invader.destRect.x + invader.destRect.w / 2;
+	bool playerInSight = player.destRect.x < invaderMidPos && (player.destRect.x + player.destRect.w) > invaderMidPos;
+	if (invaderShotReady && playerInSight) {
 		invader.shoot();
 		invaderShotTimeStamp = SDL_GetTicks();
 	}
