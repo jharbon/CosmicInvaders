@@ -5,6 +5,7 @@
 #include "Projectile.h"
 #include <vector>
 #include "Invader.h"
+#include "InvaderManager.h"
 
 class Game
 {
@@ -22,7 +23,7 @@ public:
 	bool gameOver = false;
 
 	Player player;
-	Invader invader;
+	InvaderManager invaderManager;
 	int invaderShotTimeStamp;
 
 	void init();

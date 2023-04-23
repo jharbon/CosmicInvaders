@@ -22,9 +22,7 @@ void Game::init()
 
 	SDL_Texture* invaderTex = loadTexture("assets/invader.png");
 	SDL_Texture* invaderProjectileTex = loadTexture("assets/invader_projectile.png");
-	invader = Invader(0.5 * winWidth, 0.5 * winHeight, 32, 32, invaderTex, invaderProjectileTex);
-	invaderShotTimeStamp = SDL_GetTicks();
-
+	invaderManager = InvaderManager(5, 8, winWidth, 0.5, 32, invaderTex, invaderProjectileTex);
 }
 
 SDL_Texture* Game::loadTexture(const char* imgPath)
@@ -94,35 +92,6 @@ void Game::update()
 			delete ptr;
 			player.projectiles.erase(player.projectiles.begin() + i);
 		}
-		// Check if projectile has hit the invader
-		else if (AABBcollision(ptr->destRect, invader.destRect)) {
-			delete ptr;
-			player.projectiles.erase(player.projectiles.begin() + i);
-		}
-	}
-
-	invader.update();
-
-	for (int i = 0; i < invader.projectiles.size(); ++i) {
-		Projectile* ptr = invader.projectiles[i];
-		// Delete projectile if it has moved out of bounds
-		if (ptr->destRect.y > winHeight) {
-			delete ptr;
-			invader.projectiles.erase(invader.projectiles.begin() + i);
-		}
-		// Check if projectile has hit the player
-		else if (AABBcollision(ptr->destRect, player.destRect)) {
-			delete ptr;
-			invader.projectiles.erase(invader.projectiles.begin() + i);
-		}
-	}
-
-	bool invaderShotReady = static_cast<float>(SDL_GetTicks() - invaderShotTimeStamp) / 1000 > 1.0;
-	int invaderMidPos = invader.destRect.x + invader.destRect.w / 2;
-	bool playerInSight = player.destRect.x < invaderMidPos && (player.destRect.x + player.destRect.w) > invaderMidPos;
-	if (invaderShotReady && playerInSight) {
-		invader.shoot();
-		invaderShotTimeStamp = SDL_GetTicks();
 	}
 }
 
@@ -149,10 +118,7 @@ void Game::render()
 		SDL_RenderCopyEx(renderer, p->texture, NULL, &p->destRect, NULL, NULL, SDL_FLIP_NONE);
 	}
 
-	SDL_RenderCopyEx(renderer, invader.texture, &invader.srcRect, &invader.destRect, NULL, NULL, SDL_FLIP_NONE);
-	for (auto p : invader.projectiles) {
-		SDL_RenderCopyEx(renderer, p->texture, NULL, &p->destRect, NULL, NULL, SDL_FLIP_NONE);
-	}
+	invaderManager.render(renderer);
 
 	SDL_RenderPresent(renderer);
 }
