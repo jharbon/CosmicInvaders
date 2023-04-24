@@ -2,6 +2,7 @@
 
 #include "SDL.h"
 #include "Invader.h"
+#include "Projectile.h"
 #include <vector>
 
 class InvaderManager
@@ -14,6 +15,11 @@ public:
 	InvaderManager(int rows, int cols, int winWidth, float spacingToOffsetRatio, int invaderSize, SDL_Texture* invaderTex, SDL_Texture* projectileTex);
 	~InvaderManager() {}
 
-	void update();
+	int initCols;
+	int invaderShotTimeStamp;
+	std::vector<Projectile*> projectiles;
+
+	void update(SDL_Rect playerRect);
+
 	void render(SDL_Renderer* renderer);
 };

@@ -24,7 +24,6 @@ public:
 
 	Player player;
 	InvaderManager invaderManager;
-	int invaderShotTimeStamp;
 
 	void init();
 	SDL_Texture* loadTexture(const char* imgPath);

@@ -12,12 +12,10 @@ public:
 	SDL_Texture* projectileTexture;
 	SDL_Rect srcRect, destRect;
 
-	std::vector<Projectile*> projectiles;
-
 	Invader() {}
 	Invader(int x, int y, int w, int h, SDL_Texture* tex1, SDL_Texture* tex2);
 	~Invader() {}
 
-	void shoot();
+	Projectile* shoot();
 	void update();
 };

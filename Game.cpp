@@ -87,10 +87,45 @@ void Game::update()
 
 	for (int i = 0; i < player.projectiles.size(); ++i) {
 		Projectile* ptr = player.projectiles[i];
-		// Delete any projectile if it has moved out of bounds
+		bool deleteProjectile = false;
+		// Delete this projectile if it has moved out of bounds
 		if (ptr->destRect.y < 0) {
+			deleteProjectile = true;
+		}
+		// Delete an invader if it has been hit by this projectile
+		for (int j = 0; j < invaderManager.invaders.size(); ++j) {
+			for (int k = 0; k < invaderManager.invaders[j].size(); ++k) {
+				if (AABBcollision(ptr->destRect, invaderManager.invaders[j][k]->destRect)) {
+					delete invaderManager.invaders[j][k];
+					invaderManager.invaders[j].erase(invaderManager.invaders[j].begin() + k);
+					deleteProjectile = true;
+				}
+			}
+		}
+
+		if (deleteProjectile) {
 			delete ptr;
 			player.projectiles.erase(player.projectiles.begin() + i);
+		}
+	}
+
+	invaderManager.update(player.destRect);
+
+	for (int i = 0; i < invaderManager.projectiles.size(); ++i) {
+		Projectile* ptr = invaderManager.projectiles[i];
+		bool deleteProjectile = false;
+		// Delete this projectile if it has moved out of bounds
+		if (ptr->destRect.y > winHeight) {
+			deleteProjectile = true;
+		}
+		// Check if this projectile has hit the player
+		else if (AABBcollision(ptr->destRect, player.destRect)) {
+			deleteProjectile = true;
+		}
+
+		if (deleteProjectile) {
+			delete ptr;
+			invaderManager.projectiles.erase(invaderManager.projectiles.begin() + i);
 		}
 	}
 }
