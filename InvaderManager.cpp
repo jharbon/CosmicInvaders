@@ -1,4 +1,5 @@
 #include "InvaderManager.h"
+#include <cmath>
 #include <iostream>
 
 InvaderManager::InvaderManager(int rows, int cols, int winWidth, float spacingToOffsetRatio, int invaderSize, SDL_Texture* invaderTex, SDL_Texture* projectileTex)
@@ -9,9 +10,15 @@ InvaderManager::InvaderManager(int rows, int cols, int winWidth, float spacingTo
 	int xOffset, yOffset;
 	// Number of pixels between invaders in x and y respectively
 	int xSpacing, ySpacing;
-	xSpacing = ySpacing = spacingToOffsetRatio*(winWidth - cols * invaderSize) /(2 + spacingToOffsetRatio*(cols - 1));
+	xSpacing = ySpacing = round(spacingToOffsetRatio*(winWidth - cols * invaderSize) /(2 + spacingToOffsetRatio*(cols - 1)));
 	xOffset = xSpacing / spacingToOffsetRatio;
 	yOffset = ySpacing / spacingToOffsetRatio;
+	// Split up xOffset into multiple horizontal steps 
+	xStep = 6*xOffset / (invaderSize);
+	yStep = yOffset / 2;
+	// Define left and right horizontal boundaries to maintain a minimum distance from each window side
+	xBoundaryLeft = 6*xOffset % (invaderSize);
+	xBoundaryRight = winWidth - (6*xOffset % (invaderSize));
 	
 	int xpos = xOffset;
 	int ypos = yOffset;
@@ -24,14 +31,40 @@ InvaderManager::InvaderManager(int rows, int cols, int winWidth, float spacingTo
 		xpos = xOffset;
 		ypos +=  invaderSize + ySpacing;
 	}
+
+	invaderMoveTimeStamp = invaderShotTimeStamp = SDL_GetTicks();
 }
 
 void InvaderManager::update(SDL_Rect playerRect)
 {
-	bool invaderShotReady = static_cast<float>(SDL_GetTicks() - invaderShotTimeStamp) / 1000 > 1.5;
-	if (invaderShotReady) {
+	
+	bool invaderMoveReady = static_cast<float>(SDL_GetTicks() - invaderMoveTimeStamp) / 1000 > 1.5;
+	bool moveInvaderDown = false;
+	if (invaderMoveReady) {
+		invaderMoveTimeStamp = SDL_GetTicks();
+		// Check if any invader at the start or end of each row will be beyond a horizontal boundary after the next x step
 		for (int i = 0; i < invaders.size(); ++i) {
-			for (int j = 0; j < invaders[i].size(); ++j) {
+			// Skip this row if all invaders have been deleted
+			if (invaders[i].size() == 0) {
+				continue;
+			}
+			int xNewStart = invaders[i][0]->destRect.x + xStep;
+			int endIndex = invaders[i].size() - 1;
+			int xNewEnd = invaders[i][endIndex]->destRect.x + invaders[i][endIndex]->destRect.w + xStep;
+			if (xNewStart < xBoundaryLeft || xNewEnd > xBoundaryRight) {
+				moveInvaderDown = true;
+			}
+		}
+		// Horizontal step direction needs to be reversed when the invaders move down
+		if (moveInvaderDown) {
+			xStep = -xStep;
+		}
+	}
+
+	bool invaderShotReady = static_cast<float>(SDL_GetTicks() - invaderShotTimeStamp) / 1000 > 1.5;
+	for (int i = 0; i < invaders.size(); ++i) {
+		for (int j = 0; j < invaders[i].size(); ++j) {
+			if (invaderShotReady) {
 				bool invaderBelow;
 				// First check if we are in the bottom row
 				if (i == invaders.size() - 1) {
@@ -44,7 +77,7 @@ void InvaderManager::update(SDL_Rect playerRect)
 				else {
 					// Check if any invaders in the rows below are directly below the current invader  
 					invaderBelow = false;
-					for (int k = i+1; k < invaders.size(); ++k) {
+					for (int k = i + 1; k < invaders.size(); ++k) {
 						for (int c = 0; c < invaders[k].size(); ++c) {
 							// An invader below will be horizontally aligned with the current invader
 							if (invaders[i][j]->destRect.x == invaders[k][c]->destRect.x) {
@@ -53,10 +86,13 @@ void InvaderManager::update(SDL_Rect playerRect)
 						}
 					}
 				}
-				bool playerDirectlyBelow = false;
+				bool playerDirectlyBelow;
 				int invaderMidPos = invaders[i][j]->destRect.x + (invaders[i][j]->destRect.w) / 2;
 				if (playerRect.x < invaderMidPos && playerRect.x + playerRect.w > invaderMidPos) {
 					playerDirectlyBelow = true;
+				}
+				else {
+					playerDirectlyBelow = false;
 				}
 
 				if (!invaderBelow && playerDirectlyBelow) {
@@ -64,9 +100,19 @@ void InvaderManager::update(SDL_Rect playerRect)
 					invaderShotTimeStamp = SDL_GetTicks();
 				}
 			}
+			
+			if (invaderMoveReady) {
+				// Check if another invader has already reached a boundary and signalled that all invaders should only move down for this step
+				if (moveInvaderDown) {
+					invaders[i][j]->destRect.y += yStep;
+				}
+				else {
+					invaders[i][j]->destRect.x += xStep;
+				}
+			}
 		}
 	}
-
+	
 	// Update positions of projectiles
 	for (auto p : projectiles) {
 		p->update();

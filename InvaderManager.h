@@ -16,6 +16,10 @@ public:
 	~InvaderManager() {}
 
 	int initCols;
+	int xStep, yStep;
+	int xBoundaryLeft, xBoundaryRight;
+
+	int invaderMoveTimeStamp;
 	int invaderShotTimeStamp;
 	std::vector<Projectile*> projectiles;
 
