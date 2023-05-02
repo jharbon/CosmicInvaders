@@ -21,7 +21,7 @@ Player::Player(int x, int y, int w, int h, int s, int projSpeed, SDL_Texture* te
 void Player::shoot()
 {
 	// Define the size of projectile
-	int w = destRect.w / 10;
+	int w = destRect.w / 20;
 	int h = destRect.h / 3;
 	// Projectile should start above the centre of player
 	int x = destRect.x + (destRect.w/2)  - (w/2);
