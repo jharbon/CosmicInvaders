@@ -125,6 +125,16 @@ void Game::update()
 			invaderManager.deleteProjectile(i);
 		}
 	}
+
+	// Check for projectile-projectile collisions
+	for (int i = 0; i < player.getNumProjectiles(); ++i) {
+		for (int j = 0; j < invaderManager.getNumProjectiles(); ++j) {
+			if (AABBcollision(player.getProjectileRect(i), invaderManager.getProjectileRect(j))) {
+				player.deleteProjectile(i);
+				invaderManager.deleteProjectile(j);
+			}
+		}
+	}
 }
 
 bool Game::AABBcollision(SDL_Rect projectileRect, SDL_Rect targetRect)
