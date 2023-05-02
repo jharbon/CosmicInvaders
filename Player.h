@@ -7,15 +7,16 @@
 class Player
 {
 private:
+	SDL_Texture* projectileTexture;
+	std::vector<Projectile> projectiles;
+
 public:
 	float xpos;
 	int xvel; // +/- Pixels/second
 	int speed; // Pixels/second
 	int timeStamp;
-	std::vector<Projectile*> projectiles;
 
 	SDL_Texture* texture;
-	SDL_Texture* projectileTexture;
 	SDL_Rect srcRect, destRect;
 
 	Player() {}
@@ -23,5 +24,9 @@ public:
 	~Player() {}
 
 	void shoot(); 
+	int getNumProjectiles();
+	SDL_Rect getProjectileRect(int i);
+	void deleteProjectile(int i);
 	void update();
+	void render(SDL_Renderer* renderer);
 };

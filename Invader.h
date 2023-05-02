@@ -14,8 +14,7 @@ public:
 
 	Invader() {}
 	Invader(int x, int y, int w, int h, SDL_Texture* tex1, SDL_Texture* tex2);
-	~Invader() {}
 
-	Projectile* shoot();
+	Projectile shoot();
 	void update();
 };

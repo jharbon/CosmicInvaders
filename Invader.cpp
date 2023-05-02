@@ -13,7 +13,7 @@ Invader::Invader(int x, int y, int w, int h, SDL_Texture* tex1, SDL_Texture* tex
 	destRect.y = y;
 }
 
-Projectile* Invader::shoot()
+Projectile Invader::shoot()
 {
 	// Define the size of projectile
 	int w = destRect.w / 10;
@@ -22,7 +22,7 @@ Projectile* Invader::shoot()
 	int x = destRect.x + (destRect.w / 2) - (w / 2);
 	int y = destRect.y + destRect.h;
 
-	return new Projectile(x, y, w, h, 200, projectileTexture);
+	return Projectile(x, y, w, h, 200, projectileTexture);
 }
 
 void Invader::update()

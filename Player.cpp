@@ -27,7 +27,22 @@ void Player::shoot()
 	int x = destRect.x + (destRect.w/2)  - (w/2);
 	int y = destRect.y;
 
-	projectiles.push_back(new Projectile(x, y, w, h, -200, projectileTexture));
+	projectiles.push_back(Projectile(x, y, w, h, -200, projectileTexture));
+}
+
+int Player::getNumProjectiles()
+{
+	return projectiles.size();
+}
+
+SDL_Rect Player::getProjectileRect(int i)
+{
+	return projectiles[i].destRect;
+}
+
+void Player::deleteProjectile(int i)
+{
+	projectiles.erase(projectiles.begin() + i);
 }
 
 void Player::update()
@@ -37,7 +52,15 @@ void Player::update()
 	destRect.x = round(xpos);
 	timeStamp = SDL_GetTicks();
 
-	for (auto p : projectiles) {
-		p->update();
+	for (auto &p : projectiles) {
+		p.update();
+	}
+}
+
+void Player::render(SDL_Renderer* renderer)
+{
+	SDL_RenderCopyEx(renderer, texture, &srcRect, &destRect, NULL, NULL, SDL_FLIP_NONE);
+	for (auto &p : projectiles) {
+		SDL_RenderCopyEx(renderer, p.texture, NULL, &p.destRect, NULL, NULL, SDL_FLIP_NONE);
 	}
 }

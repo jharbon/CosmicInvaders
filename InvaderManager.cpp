@@ -23,9 +23,9 @@ InvaderManager::InvaderManager(int rows, int cols, int winWidth, float spacingTo
 	int xpos = xOffset;
 	int ypos = yOffset;
 	for (int i = 0; i < rows; ++i) {
-		invaders.push_back(std::vector<Invader*>{});
+		invaders.push_back(std::vector<Invader>{});
 		for (int j = 0; j < cols; ++j) {
-			invaders[i].push_back(new Invader(xpos, ypos, 32, 32, invaderTex, projectileTex));
+			invaders[i].push_back(Invader(xpos, ypos, 32, 32, invaderTex, projectileTex));
 			xpos += invaderSize + xSpacing;
 		}
 		xpos = xOffset;
@@ -33,6 +33,41 @@ InvaderManager::InvaderManager(int rows, int cols, int winWidth, float spacingTo
 	}
 
 	invaderMoveTimeStamp = invaderShotTimeStamp = SDL_GetTicks();
+}
+
+int InvaderManager::getNumRows()
+{
+	return invaders.size();
+}
+
+int InvaderManager::getNumCols(int i)
+{
+	return invaders[i].size();
+}
+
+SDL_Rect InvaderManager::getInvaderRect(int row, int col)
+{
+	return invaders[row][col].destRect;
+}
+
+void InvaderManager::deleteInvader(int row, int col)
+{
+	invaders[row].erase(invaders[row].begin() + col);
+}
+
+int InvaderManager::getNumProjectiles()
+{
+	return projectiles.size();
+}
+
+SDL_Rect InvaderManager::getProjectileRect(int i)
+{
+	return projectiles[i].destRect;
+}
+
+void InvaderManager::deleteProjectile(int i)
+{
+	projectiles.erase(projectiles.begin() + i);
 }
 
 void InvaderManager::update(SDL_Rect playerRect)
@@ -48,9 +83,9 @@ void InvaderManager::update(SDL_Rect playerRect)
 			if (invaders[i].size() == 0) {
 				continue;
 			}
-			int xNewStart = invaders[i][0]->destRect.x + xStep;
+			int xNewStart = invaders[i][0].destRect.x + xStep;
 			int endIndex = invaders[i].size() - 1;
-			int xNewEnd = invaders[i][endIndex]->destRect.x + invaders[i][endIndex]->destRect.w + xStep;
+			int xNewEnd = invaders[i][endIndex].destRect.x + invaders[i][endIndex].destRect.w + xStep;
 			if (xNewStart < xBoundaryLeft || xNewEnd > xBoundaryRight) {
 				moveInvaderDown = true;
 			}
@@ -80,14 +115,14 @@ void InvaderManager::update(SDL_Rect playerRect)
 					for (int k = i + 1; k < invaders.size(); ++k) {
 						for (int c = 0; c < invaders[k].size(); ++c) {
 							// An invader below will be horizontally aligned with the current invader
-							if (invaders[i][j]->destRect.x == invaders[k][c]->destRect.x) {
+							if (invaders[i][j].destRect.x == invaders[k][c].destRect.x) {
 								invaderBelow = true;
 							}
 						}
 					}
 				}
 				bool playerDirectlyBelow;
-				int invaderMidPos = invaders[i][j]->destRect.x + (invaders[i][j]->destRect.w) / 2;
+				int invaderMidPos = invaders[i][j].destRect.x + (invaders[i][j].destRect.w) / 2;
 				if (playerRect.x < invaderMidPos && playerRect.x + playerRect.w > invaderMidPos) {
 					playerDirectlyBelow = true;
 				}
@@ -96,7 +131,7 @@ void InvaderManager::update(SDL_Rect playerRect)
 				}
 
 				if (!invaderBelow && playerDirectlyBelow) {
-					projectiles.push_back(invaders[i][j]->shoot());
+					projectiles.push_back(invaders[i][j].shoot());
 					invaderShotTimeStamp = SDL_GetTicks();
 				}
 			}
@@ -104,18 +139,18 @@ void InvaderManager::update(SDL_Rect playerRect)
 			if (invaderMoveReady) {
 				// Check if another invader has already reached a boundary and signalled that all invaders should only move down for this step
 				if (moveInvaderDown) {
-					invaders[i][j]->destRect.y += yStep;
+					invaders[i][j].destRect.y += yStep;
 				}
 				else {
-					invaders[i][j]->destRect.x += xStep;
+					invaders[i][j].destRect.x += xStep;
 				}
 			}
 		}
 	}
 	
 	// Update positions of projectiles
-	for (auto p : projectiles) {
-		p->update();
+	for (auto &p : projectiles) {
+		p.update();
 	}
 }
 
@@ -124,12 +159,12 @@ void InvaderManager::render(SDL_Renderer* renderer)
 	for (int i = 0; i < invaders.size(); ++i) {
 		int numCols = invaders[i].size();
 		for (int j = 0; j < numCols; ++j) { 
-			SDL_RenderCopyEx(renderer, invaders[i][j]->texture, &invaders[i][j]->srcRect, &invaders[i][j]->destRect, NULL, NULL, SDL_FLIP_NONE);
+			SDL_RenderCopyEx(renderer, invaders[i][j].texture, &invaders[i][j].srcRect, &invaders[i][j].destRect, NULL, NULL, SDL_FLIP_NONE);
 		}
 	}
 
 	// Render projectiles
-	for (auto p : projectiles) {
-		SDL_RenderCopyEx(renderer, p->texture, NULL, &p->destRect, NULL, NULL, SDL_FLIP_NONE);
+	for (auto &p : projectiles) {
+		SDL_RenderCopyEx(renderer, p.texture, NULL, &p.destRect, NULL, NULL, SDL_FLIP_NONE);
 	}
 }

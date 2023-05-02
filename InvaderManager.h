@@ -8,22 +8,29 @@
 class InvaderManager
 {
 private:
-public:
-	std::vector<std::vector<Invader*>> invaders;
-
-	InvaderManager() {}
-	InvaderManager(int rows, int cols, int winWidth, float spacingToOffsetRatio, int invaderSize, SDL_Texture* invaderTex, SDL_Texture* projectileTex);
-	~InvaderManager() {}
-
 	int initCols;
 	int xStep, yStep;
 	int xBoundaryLeft, xBoundaryRight;
 
+	std::vector<std::vector<Invader>> invaders;
 	int invaderMoveTimeStamp;
 	int invaderShotTimeStamp;
-	std::vector<Projectile*> projectiles;
+	std::vector<Projectile> projectiles;
+
+public:
+	InvaderManager() {}
+	InvaderManager(int rows, int cols, int winWidth, float spacingToOffsetRatio, int invaderSize, SDL_Texture* invaderTex, SDL_Texture* projectileTex);
+	~InvaderManager() {}
+
+	int getNumRows();
+	int getNumCols(int i);
+	SDL_Rect getInvaderRect(int row, int col);
+	void deleteInvader(int row, int col);
+
+	int getNumProjectiles();
+	SDL_Rect getProjectileRect(int i);
+	void deleteProjectile(int i);
 
 	void update(SDL_Rect playerRect);
-
 	void render(SDL_Renderer* renderer);
 };

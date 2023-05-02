@@ -85,47 +85,44 @@ void Game::update()
 		player.xpos = player.destRect.x = winWidth - player.destRect.w;
 	}
 
-	for (int i = 0; i < player.projectiles.size(); ++i) {
-		Projectile* ptr = player.projectiles[i];
+	for (int i = 0; i < player.getNumProjectiles(); ++i) {
+		SDL_Rect projectileRect = player.getProjectileRect(i);
 		bool deleteProjectile = false;
 		// Delete this projectile if it has moved out of bounds
-		if (ptr->destRect.y < 0) {
+		if (projectileRect.y < 0) {
 			deleteProjectile = true;
 		}
 		// Delete an invader if it has been hit by this projectile
-		for (int j = 0; j < invaderManager.invaders.size(); ++j) {
-			for (int k = 0; k < invaderManager.invaders[j].size(); ++k) {
-				if (AABBcollision(ptr->destRect, invaderManager.invaders[j][k]->destRect)) {
-					delete invaderManager.invaders[j][k];
-					invaderManager.invaders[j].erase(invaderManager.invaders[j].begin() + k);
+		for (int j = 0; j < invaderManager.getNumRows(); ++j) {
+			for (int k = 0; k < invaderManager.getNumCols(j); ++k) {
+				if (AABBcollision(projectileRect, invaderManager.getInvaderRect(j, k))) {
+					invaderManager.deleteInvader(j, k);
 					deleteProjectile = true;
 				}
 			}
 		}
 
 		if (deleteProjectile) {
-			delete ptr;
-			player.projectiles.erase(player.projectiles.begin() + i);
+			player.deleteProjectile(i);
 		}
 	}
 
 	invaderManager.update(player.destRect);
 
-	for (int i = 0; i < invaderManager.projectiles.size(); ++i) {
-		Projectile* ptr = invaderManager.projectiles[i];
+	for (int i = 0; i < invaderManager.getNumProjectiles(); ++i) {
+		SDL_Rect projectileRect = invaderManager.getProjectileRect(i);
 		bool deleteProjectile = false;
 		// Delete this projectile if it has moved out of bounds
-		if (ptr->destRect.y > winHeight) {
+		if (projectileRect.y > winHeight) {
 			deleteProjectile = true;
 		}
 		// Check if this projectile has hit the player
-		else if (AABBcollision(ptr->destRect, player.destRect)) {
+		else if (AABBcollision(projectileRect, player.destRect)) {
 			deleteProjectile = true;
 		}
 
 		if (deleteProjectile) {
-			delete ptr;
-			invaderManager.projectiles.erase(invaderManager.projectiles.begin() + i);
+			invaderManager.deleteProjectile(i);
 		}
 	}
 }
@@ -148,11 +145,7 @@ void Game::render()
 {
 	SDL_RenderClear(renderer);
 
-	SDL_RenderCopyEx(renderer, player.texture, &player.srcRect, &player.destRect, NULL, NULL, SDL_FLIP_NONE);
-	for (auto p : player.projectiles) {
-		SDL_RenderCopyEx(renderer, p->texture, NULL, &p->destRect, NULL, NULL, SDL_FLIP_NONE);
-	}
-
+	player.render(renderer);
 	invaderManager.render(renderer);
 
 	SDL_RenderPresent(renderer);
