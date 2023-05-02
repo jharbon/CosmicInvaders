@@ -9,6 +9,7 @@ class Player
 private:
 	SDL_Texture* projectileTexture;
 	std::vector<Projectile> projectiles;
+	int projectileSpeed;
 
 public:
 	float xpos;
@@ -20,7 +21,7 @@ public:
 	SDL_Rect srcRect, destRect;
 
 	Player() {}
-	Player(int x, int y, int w, int h, int s, SDL_Texture* tex1, SDL_Texture* tex2);
+	Player(int x, int y, int w, int h, int s, int projSpeed, SDL_Texture* tex1, SDL_Texture* tex2);
 	~Player() {}
 
 	void shoot(); 

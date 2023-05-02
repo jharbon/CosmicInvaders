@@ -19,7 +19,7 @@ private:
 
 public:
 	InvaderManager() {}
-	InvaderManager(int rows, int cols, int winWidth, float spacingToOffsetRatio, int invaderSize, SDL_Texture* invaderTex, SDL_Texture* projectileTex);
+	InvaderManager(int rows, int cols, int winWidth, float spacingToOffsetRatio, int invaderSize, int projectileSpeed, SDL_Texture* invaderTex, SDL_Texture* projectileTex);
 	~InvaderManager() {}
 
 	int getNumRows();

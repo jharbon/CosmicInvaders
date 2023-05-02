@@ -2,8 +2,8 @@
 #include <cmath>
 #include <iostream>
 
-Player::Player(int x, int y, int w, int h, int s, SDL_Texture* tex1, SDL_Texture* tex2)
-	: texture{ tex1 }, projectileTexture{ tex2 }, xvel { 0 }, speed{ s }
+Player::Player(int x, int y, int w, int h, int s, int projSpeed, SDL_Texture* tex1, SDL_Texture* tex2)
+	: projectileSpeed{ projSpeed }, texture { tex1 }, projectileTexture{ tex2 }, xvel{ 0 }, speed{ s }
 {
 	xpos = static_cast<float>(x);
 
@@ -27,7 +27,7 @@ void Player::shoot()
 	int x = destRect.x + (destRect.w/2)  - (w/2);
 	int y = destRect.y;
 
-	projectiles.push_back(Projectile(x, y, w, h, -200, projectileTexture));
+	projectiles.push_back(Projectile(x, y, w, h, -projectileSpeed, projectileTexture));
 }
 
 int Player::getNumProjectiles()

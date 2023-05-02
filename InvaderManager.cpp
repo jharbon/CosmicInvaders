@@ -2,7 +2,7 @@
 #include <cmath>
 #include <iostream>
 
-InvaderManager::InvaderManager(int rows, int cols, int winWidth, float spacingToOffsetRatio, int invaderSize, SDL_Texture* invaderTex, SDL_Texture* projectileTex)
+InvaderManager::InvaderManager(int rows, int cols, int winWidth, float spacingToOffsetRatio, int invaderSize, int projectileSpeed, SDL_Texture* invaderTex, SDL_Texture* projectileTex)
 {
 	initCols = cols;
 	// xOffset = number of pixels between left side and first invader in col = number of pixels between right side and last invader in col
@@ -25,7 +25,7 @@ InvaderManager::InvaderManager(int rows, int cols, int winWidth, float spacingTo
 	for (int i = 0; i < rows; ++i) {
 		invaders.push_back(std::vector<Invader>{});
 		for (int j = 0; j < cols; ++j) {
-			invaders[i].push_back(Invader(xpos, ypos, 32, 32, invaderTex, projectileTex));
+			invaders[i].push_back(Invader(xpos, ypos, 32, 32, projectileSpeed, invaderTex, projectileTex));
 			xpos += invaderSize + xSpacing;
 		}
 		xpos = xOffset;

@@ -2,6 +2,9 @@
 #include "SDL_image.h"
 #include "iostream"
 
+const int PLAYER_PROJECTILE_SPEED = 450;
+const int INVADER_PROJECTILE_SPEED = 500;
+
 Game::Game(const char* title, int width, int height)
 {
 	winWidth = width;
@@ -18,11 +21,11 @@ void Game::init()
 {
 	SDL_Texture* playerTex = loadTexture("assets/player.png");
 	SDL_Texture* projectileTex = loadTexture("assets/player_projectile.png");
-	player = Player(0, 0.9*winHeight, 64, 32, 125, playerTex, projectileTex);
+	player = Player(0, 0.9*winHeight, 64, 32, 125, PLAYER_PROJECTILE_SPEED, playerTex, projectileTex);
 
 	SDL_Texture* invaderTex = loadTexture("assets/invader.png");
 	SDL_Texture* invaderProjectileTex = loadTexture("assets/invader_projectile.png");
-	invaderManager = InvaderManager(5, 8, winWidth, 0.5, 32, invaderTex, invaderProjectileTex);
+	invaderManager = InvaderManager(5, 8, winWidth, 0.5, 32, INVADER_PROJECTILE_SPEED, invaderTex, invaderProjectileTex);
 }
 
 SDL_Texture* Game::loadTexture(const char* imgPath)
