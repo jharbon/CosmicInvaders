@@ -13,6 +13,11 @@ public:
 	BunkerManager(int yPosBunk, int bunkerWidth, int numBunkers, float spacingToOffsetRatio, int winWidth, SDL_Texture* bunkerBlockTex);
 	~BunkerManager() {}
 
-	void update();
+	int getNumBunkers();
+	int getBunkerRows(int i);
+	int getBunkerCols(int i, int j);
+	SDL_Rect getBlockRect(int i, int j, int k);
+	void deleteBlock(int i, int j, int k);
+
 	void render(SDL_Renderer* renderer);
 };

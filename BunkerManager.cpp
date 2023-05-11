@@ -49,9 +49,29 @@ BunkerManager::BunkerManager(int yPosBunk, int bunkerWidth, int numBunkers, floa
 	}
 }
 
-void BunkerManager::update()
+int BunkerManager::getNumBunkers()
 {
+	return bunkers.size();
+}
 
+int BunkerManager::getBunkerRows(int i)
+{
+	return bunkers[i].size();
+}
+
+int BunkerManager::getBunkerCols(int i, int j)
+{
+	return bunkers[i][j].size();
+}
+
+SDL_Rect BunkerManager::getBlockRect(int i, int j, int k)
+{
+	return bunkers[i][j][k];
+}
+
+void BunkerManager::deleteBlock(int i, int j, int k)
+{
+	bunkers[i][j].erase(bunkers[i][j].begin() + k);
 }
 
 void BunkerManager::render(SDL_Renderer* renderer)

@@ -141,6 +141,32 @@ void Game::update()
 			}
 		}
 	}
+
+	// Check for projectile-bunker collisions
+	for (int i = 0; i < bunkerManager.getNumBunkers(); ++i) {
+		for (int j = 0; j < bunkerManager.getBunkerRows(i); ++j) {
+			for (int k = 0; k < bunkerManager.getBunkerCols(i, j); ++k) {
+				bool blockHit = false;
+				// Player projectiles check
+				for (int p = 0; p < player.getNumProjectiles(); ++p) {
+					if (AABBcollision(player.getProjectileRect(p), bunkerManager.getBlockRect(i, j, k))) {
+						blockHit = true;
+						player.deleteProjectile(p);
+					}
+				}
+				// Invader projectiles check
+				for (int p = 0; p < invaderManager.getNumProjectiles(); ++p) {
+					if (AABBcollision(invaderManager.getProjectileRect(p), bunkerManager.getBlockRect(i, j, k))) {
+						blockHit = true;
+						invaderManager.deleteProjectile(p);
+					}
+				}
+				if (blockHit) {
+					bunkerManager.deleteBlock(i, j, k);
+				}
+			}
+		}
+	}
 }
 
 bool Game::AABBcollision(SDL_Rect projectileRect, SDL_Rect targetRect)
