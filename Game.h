@@ -6,6 +6,7 @@
 #include <vector>
 #include "Invader.h"
 #include "InvaderManager.h"
+#include "BunkerManager.h"
 
 class Game
 {
@@ -24,6 +25,7 @@ public:
 
 	Player player;
 	InvaderManager invaderManager;
+	BunkerManager bunkerManager;
 
 	void init();
 	SDL_Texture* loadTexture(const char* imgPath);

@@ -26,6 +26,9 @@ void Game::init()
 	SDL_Texture* invaderTex = loadTexture("assets/invader.png");
 	SDL_Texture* invaderProjectileTex = loadTexture("assets/invader_projectile.png");
 	invaderManager = InvaderManager(5, 8, winWidth, 0.5, 32, INVADER_PROJECTILE_SPEED, invaderTex, invaderProjectileTex);
+
+	SDL_Texture* bunkerBlockTex = loadTexture("assets/bunker_block.png");
+	bunkerManager = BunkerManager(0.75*winHeight, 0.1*winWidth, 4, 1, winWidth, bunkerBlockTex);
 }
 
 SDL_Texture* Game::loadTexture(const char* imgPath)
@@ -160,6 +163,7 @@ void Game::render()
 
 	player.render(renderer);
 	invaderManager.render(renderer);
+	bunkerManager.render(renderer);
 
 	SDL_RenderPresent(renderer);
 }
