@@ -18,7 +18,6 @@ int main(int argc, char* args[])
 	int screenHeight = dm.h;
 
 	Game* game = new Game("Cosmic Invaders", (float(1)/3)*screenWidth, (float(2)/3)*screenHeight);
-	game->init();
 
 	while (game->running) {
 

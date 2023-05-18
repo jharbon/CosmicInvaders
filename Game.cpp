@@ -1,7 +1,10 @@
 #include "Game.h"
 #include "SDL_image.h"
+#include <string>
+//#include <format>
 #include "iostream"
 
+const int SCORE_PER_INVADER = 10;
 const int PLAYER_PROJECTILE_SPEED = 450;
 const int INVADER_PROJECTILE_SPEED = 500;
 
@@ -10,18 +13,30 @@ Game::Game(const char* title, int width, int height)
 	winWidth = width;
 	winHeight = height;
 	window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
-
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
-	init();
+	TTF_Init();
+	font = TTF_OpenFont("assets/SF_Speakeasy.ttf", 30);
+
+	init(0);
 }
 
-void Game::init()
+void Game::init(int s)
 {
+	// Initialise score with a parameter so that it can be carried over when we re-initiliase for e.g. a new wave of invaders
+	score = s;
+	// Place score text in centre of window and below the player
+	scoreRect.w = 0.25 * winWidth;
+	scoreRect.h = 0.04 * winHeight;
+	scoreRect.x = winWidth / 2 - scoreRect.w / 2;
+	scoreRect.y = 0.93 * winHeight;
+	// Set the y coordinate value for the line we will render to separate the text from the player, bunkers and invaders above
+	yTextBoundaryLine = 0.9 * winHeight;
+
 	SDL_Texture* playerTex = loadTexture("assets/player.png");
 	SDL_Texture* projectileTex = loadTexture("assets/player_projectile.png");
-	player = Player(0, 0.9*winHeight, 64, 32, 125, PLAYER_PROJECTILE_SPEED, playerTex, projectileTex);
+	player = Player(0, 0.85*winHeight, 64, 32, 125, PLAYER_PROJECTILE_SPEED, playerTex, projectileTex);
 
 	SDL_Texture* invaderTex = loadTexture("assets/invader.png");
 	SDL_Texture* invaderProjectileTex = loadTexture("assets/invader_projectile.png");
@@ -104,6 +119,7 @@ void Game::update()
 				if (AABBcollision(projectileRect, invaderManager.getInvaderRect(j, k))) {
 					invaderManager.deleteInvader(j, k);
 					deleteProjectile = true;
+					score += SCORE_PER_INVADER;
 				}
 			}
 		}
@@ -118,8 +134,8 @@ void Game::update()
 	for (int i = 0; i < invaderManager.getNumProjectiles(); ++i) {
 		SDL_Rect projectileRect = invaderManager.getProjectileRect(i);
 		bool deleteProjectile = false;
-		// Delete this projectile if it has moved out of bounds
-		if (projectileRect.y > winHeight) {
+		// Delete this projectile if it has hit the text boundary line
+		if (projectileRect.y + projectileRect.h > yTextBoundaryLine) {
 			deleteProjectile = true;
 		}
 		// Check if this projectile has hit the player
@@ -186,6 +202,19 @@ bool Game::AABBcollision(SDL_Rect projectileRect, SDL_Rect targetRect)
 void Game::render()
 {
 	SDL_RenderClear(renderer);
+
+	// Render text which displays the current player score
+	std::string scoreStr = "Score: " + std::to_string(score);
+	SDL_Color white = { 255,255,255 };
+	SDL_Surface* scoreSurf = TTF_RenderUTF8_Solid(font, scoreStr.c_str(), white);
+	SDL_Texture* scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurf);
+	SDL_FreeSurface(scoreSurf);
+	SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
+
+	// Render the line which separates the text at the bottom from the player, bunker and invaders above
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	SDL_RenderDrawLine(renderer, 0, yTextBoundaryLine, winWidth, yTextBoundaryLine);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
 	player.render(renderer);
 	invaderManager.render(renderer);
