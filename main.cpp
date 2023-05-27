@@ -23,7 +23,15 @@ int main(int argc, char* args[])
 
 		frameStart = SDL_GetTicks();
 
-		game->handleEvents();
+		SDL_Event event;
+		while (SDL_PollEvent(&event)) {
+			if (event.type == SDL_QUIT) {
+				game->running = false;
+			}
+			else if (!game->gameOver) {
+				game->handlePlayerInput(event);
+			}
+		}
 
 		if (!game->gameOver) {
 			game->update();

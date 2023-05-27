@@ -7,6 +7,8 @@
 class Player
 {
 private:
+	int lives;
+
 	SDL_Texture* projectileTexture;
 	std::vector<Projectile> projectiles;
 	int projectileSpeed;
@@ -25,6 +27,8 @@ public:
 	~Player() {}
 
 	void shoot(); 
+	int getNumLives();
+	void loseLife();
 	int getNumProjectiles();
 	SDL_Rect getProjectileRect(int i);
 	void deleteProjectile(int i);

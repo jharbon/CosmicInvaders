@@ -15,12 +15,12 @@ private:
 	int winWidth, winHeight;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
-	SDL_Event event;
 	TTF_Font* font;
 
 	int yTextBoundaryLine;
 	int score;
 	SDL_Rect scoreRect;
+	SDL_Rect playerLivesRect;
 
 public:
 	Game(const char* title, int width, int height);
@@ -36,9 +36,7 @@ public:
 	void init(int s);
 	SDL_Texture* loadTexture(const char* imgPath);
 
-	void handleEvents();
-	void handlePlayerInput();
-
+	void handlePlayerInput(SDL_Event &event);
 	void update();
 	static bool AABBcollision(SDL_Rect projectileRect, SDL_Rect targetRect);
 

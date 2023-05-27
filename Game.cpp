@@ -24,12 +24,17 @@ Game::Game(const char* title, int width, int height)
 
 void Game::init(int s)
 {
+	// Place player lives text in bottom left of window and below the player
+	playerLivesRect.w = 0.25 * winWidth;
+	playerLivesRect.h = 0.04 * winHeight;
+	playerLivesRect.x = 0.05 * winWidth;
+	playerLivesRect.y = 0.93 * winHeight;
 	// Initialise score with a parameter so that it can be carried over when we re-initiliase for e.g. a new wave of invaders
 	score = s;
 	// Place score text in centre of window and below the player
 	scoreRect.w = 0.25 * winWidth;
 	scoreRect.h = 0.04 * winHeight;
-	scoreRect.x = winWidth / 2 - scoreRect.w / 2;
+	scoreRect.x = 0.7 * winWidth;
 	scoreRect.y = 0.93 * winHeight;
 	// Set the y coordinate value for the line we will render to separate the text from the player, bunkers and invaders above
 	yTextBoundaryLine = 0.9 * winHeight;
@@ -54,18 +59,7 @@ SDL_Texture* Game::loadTexture(const char* imgPath)
 	return tex;
 }
 
-void Game::handleEvents()
-{
-	SDL_PollEvent(&event);
-	if (event.type == SDL_QUIT) {
-		running = false;
-	}
-	else {
-		handlePlayerInput();
-	}
-}
-
-void Game::handlePlayerInput()
+void Game::handlePlayerInput(SDL_Event &event)
 {
 	if (event.type == SDL_KEYDOWN) {
 		switch (event.key.keysym.sym) {
@@ -140,7 +134,12 @@ void Game::update()
 		}
 		// Check if this projectile has hit the player
 		else if (AABBcollision(projectileRect, player.destRect)) {
+			player.loseLife();
 			deleteProjectile = true;
+			if (player.getNumLives() == 0) {
+				// End the game if player has lost all their lives
+				gameOver = true;
+			}
 		}
 
 		if (deleteProjectile) {
@@ -202,10 +201,17 @@ bool Game::AABBcollision(SDL_Rect projectileRect, SDL_Rect targetRect)
 void Game::render()
 {
 	SDL_RenderClear(renderer);
+	SDL_Color white = { 255,255,255 };
+
+	// Render text which displays the current number of player lives
+	std::string livesStr = "Lives: " + std::to_string(player.getNumLives());
+	SDL_Surface* livesSurf = TTF_RenderUTF8_Solid(font, livesStr.c_str(), white);
+	SDL_Texture* livesTexture = SDL_CreateTextureFromSurface(renderer, livesSurf);
+	SDL_FreeSurface(livesSurf);
+	SDL_RenderCopy(renderer, livesTexture, NULL, &playerLivesRect);
 
 	// Render text which displays the current player score
 	std::string scoreStr = "Score: " + std::to_string(score);
-	SDL_Color white = { 255,255,255 };
 	SDL_Surface* scoreSurf = TTF_RenderUTF8_Solid(font, scoreStr.c_str(), white);
 	SDL_Texture* scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurf);
 	SDL_FreeSurface(scoreSurf);
