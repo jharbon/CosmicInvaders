@@ -2,8 +2,12 @@
 #include <cmath>
 #include <iostream>
 
+const float INIT_MOVEMENT_WAIT_PERIOD = 1.5;
+const float INIT_SHOT_WAIT_PERIOD = 1.5;
+
 InvaderManager::InvaderManager(int rows, int cols, int winWidth, float spacingToOffsetRatio, int invaderSize, int projectileSpeed, SDL_Texture* invaderTex, SDL_Texture* projectileTex)
 {
+	initRows = rows;
 	initCols = cols;
 	// xOffset = number of pixels between left side and first invader in col = number of pixels between right side and last invader in col
 	// yOffset = number of pixels between top side and invaders in first row
@@ -32,7 +36,9 @@ InvaderManager::InvaderManager(int rows, int cols, int winWidth, float spacingTo
 		ypos +=  invaderSize + ySpacing;
 	}
 
-	invaderMoveTimeStamp = invaderShotTimeStamp = SDL_GetTicks();
+	movementTimeStamp = shotTimeStamp = SDL_GetTicks();
+	movementWaitPeriod = INIT_MOVEMENT_WAIT_PERIOD;
+	shotWaitPeriod = INIT_SHOT_WAIT_PERIOD;
 }
 
 int InvaderManager::getNumRows()
@@ -53,6 +59,17 @@ SDL_Rect InvaderManager::getInvaderRect(int row, int col)
 void InvaderManager::deleteInvader(int row, int col)
 {
 	invaders[row].erase(invaders[row].begin() + col);
+
+	// Find fraction of invaders left
+	int initNumInvaders = initRows * initCols;
+	int numInvaders = 0;
+	for (int i = 0; i < getNumRows(); ++i) {
+		numInvaders += getNumCols(i);
+	}
+	float fracInvadersLeft = static_cast<float>(numInvaders) / initNumInvaders;
+
+	// Decrease the movement wait period each time
+	movementWaitPeriod = fracInvadersLeft * INIT_MOVEMENT_WAIT_PERIOD;	
 }
 
 int InvaderManager::getNumProjectiles()
@@ -73,10 +90,10 @@ void InvaderManager::deleteProjectile(int i)
 void InvaderManager::update(SDL_Rect playerRect)
 {
 	
-	bool invaderMoveReady = static_cast<float>(SDL_GetTicks() - invaderMoveTimeStamp) / 1000 > 1.5;
+	bool invaderMoveReady = static_cast<float>(SDL_GetTicks() - movementTimeStamp) / 1000 > movementWaitPeriod;
 	bool moveInvaderDown = false;
 	if (invaderMoveReady) {
-		invaderMoveTimeStamp = SDL_GetTicks();
+		movementTimeStamp = SDL_GetTicks();
 		// Check if any invader at the start or end of each row will be beyond a horizontal boundary after the next x step
 		for (int i = 0; i < invaders.size(); ++i) {
 			// Skip this row if all invaders have been deleted
@@ -96,7 +113,7 @@ void InvaderManager::update(SDL_Rect playerRect)
 		}
 	}
 
-	bool invaderShotReady = static_cast<float>(SDL_GetTicks() - invaderShotTimeStamp) / 1000 > 1.5;
+	bool invaderShotReady = static_cast<float>(SDL_GetTicks() - shotTimeStamp) / 1000 > shotWaitPeriod;
 	for (int i = 0; i < invaders.size(); ++i) {
 		for (int j = 0; j < invaders[i].size(); ++j) {
 			if (invaderShotReady) {
@@ -132,7 +149,7 @@ void InvaderManager::update(SDL_Rect playerRect)
 
 				if (!invaderBelow && playerDirectlyBelow) {
 					projectiles.push_back(invaders[i][j].shoot());
-					invaderShotTimeStamp = SDL_GetTicks();
+					shotTimeStamp = SDL_GetTicks();
 				}
 			}
 			

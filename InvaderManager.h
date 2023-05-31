@@ -8,13 +8,16 @@
 class InvaderManager
 {
 private:
+	int initRows;
 	int initCols;
 	int xStep, yStep;
 	int xBoundaryLeft, xBoundaryRight;
 
 	std::vector<std::vector<Invader>> invaders;
-	int invaderMoveTimeStamp;
-	int invaderShotTimeStamp;
+	int movementTimeStamp;
+	float movementWaitPeriod;
+	int shotTimeStamp;
+	float shotWaitPeriod;
 	std::vector<Projectile> projectiles;
 
 public:
