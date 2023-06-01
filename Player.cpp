@@ -2,6 +2,8 @@
 #include <cmath>
 #include <iostream>
 
+const float SHOT_WAIT_PERIOD = 0.75;
+
 Player::Player(int x, int y, int w, int h, int s, int projSpeed, SDL_Texture* tex1, SDL_Texture* tex2)
 	: projectileSpeed{ projSpeed }, texture { tex1 }, projectileTexture{ tex2 }, xvel{ 0 }, speed{ s }, lives{ 3 } 
 {
@@ -15,19 +17,23 @@ Player::Player(int x, int y, int w, int h, int s, int projSpeed, SDL_Texture* te
 	destRect.x = x;
 	destRect.y = y;
 
-	timeStamp = SDL_GetTicks();
+	timeStamp = shotTimeStamp = SDL_GetTicks();
 }
 
 void Player::shoot()
 {
-	// Define the size of projectile
-	int w = destRect.w / 20;
-	int h = destRect.h / 3;
-	// Projectile should start above the centre of player
-	int x = destRect.x + (destRect.w/2)  - (w/2);
-	int y = destRect.y;
+	bool shotReady = static_cast<float>(SDL_GetTicks() - shotTimeStamp) / 1000 > SHOT_WAIT_PERIOD;
+	if (shotReady) {
+		// Define the size of projectile
+		int w = destRect.w / 20;
+		int h = destRect.h / 3;
+		// Projectile should start above the centre of player
+		int x = destRect.x + (destRect.w / 2) - (w / 2);
+		int y = destRect.y;
 
-	projectiles.push_back(Projectile(x, y, w, h, -projectileSpeed, projectileTexture));
+		projectiles.push_back(Projectile(x, y, w, h, -projectileSpeed, projectileTexture));
+		shotTimeStamp = SDL_GetTicks();
+	}
 }
 
 int Player::getNumLives()

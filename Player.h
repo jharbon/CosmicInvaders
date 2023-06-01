@@ -8,6 +8,7 @@ class Player
 {
 private:
 	int lives;
+	int shotTimeStamp;
 
 	SDL_Texture* projectileTexture;
 	std::vector<Projectile> projectiles;
