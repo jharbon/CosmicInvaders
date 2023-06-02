@@ -19,6 +19,7 @@ Game::Game(const char* title, int width, int height)
 	TTF_Init();
 	font = TTF_OpenFont("assets/SF_Speakeasy.ttf", 30);
 
+	invaderWave = 0;
 	init(0);
 }
 
@@ -43,9 +44,15 @@ void Game::init(int s)
 	SDL_Texture* projectileTex = loadTexture("assets/player_projectile.png");
 	player = Player(0, 0.85*winHeight, 64, 32, 125, PLAYER_PROJECTILE_SPEED, playerTex, projectileTex);
 
+	int yOffset = (0.1 + 0.02*invaderWave) * winHeight;
+	if (yOffset > 0.25 * winHeight) {
+		// Set a maximum y offset for the invaders
+		yOffset = 0.25 * winHeight; 
+	}
+	++invaderWave;
 	SDL_Texture* invaderTex = loadTexture("assets/invader.png");
 	SDL_Texture* invaderProjectileTex = loadTexture("assets/invader_projectile.png");
-	invaderManager = InvaderManager(5, 8, winWidth, 0.5, 32, INVADER_PROJECTILE_SPEED, invaderTex, invaderProjectileTex);
+	invaderManager = InvaderManager(5, 8, 0.5, winWidth, yOffset, 32, INVADER_PROJECTILE_SPEED, invaderTex, invaderProjectileTex);
 
 	SDL_Texture* bunkerBlockTex = loadTexture("assets/bunker_block.png");
 	bunkerManager = BunkerManager(0.75*winHeight, 0.1*winWidth, 4, 1, winWidth, bunkerBlockTex);
@@ -181,6 +188,12 @@ void Game::update()
 				}
 			}
 		}
+	}
+
+	// Check if player has destroyed all invaders
+	if (invaderManager.getNumInvaders() == 0) {
+		// Initialise a new wave
+		init(score);
 	}
 }
 

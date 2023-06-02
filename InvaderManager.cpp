@@ -5,21 +5,20 @@
 const float INIT_MOVEMENT_WAIT_PERIOD = 1.5;
 const float INIT_SHOT_WAIT_PERIOD = 1.5;
 
-InvaderManager::InvaderManager(int rows, int cols, int winWidth, float spacingToOffsetRatio, int invaderSize, int projectileSpeed, SDL_Texture* invaderTex, SDL_Texture* projectileTex)
+InvaderManager::InvaderManager(int rows, int cols, float spacingToOffsetRatio, int winWidth, int yOffset, int invaderSize, int projectileSpeed, SDL_Texture* invaderTex, SDL_Texture* projectileTex)
 {
 	initRows = rows;
 	initCols = cols;
 	// xOffset = number of pixels between left side and first invader in col = number of pixels between right side and last invader in col
 	// yOffset = number of pixels between top side and invaders in first row
-	int xOffset, yOffset;
+	int xOffset;
 	// Number of pixels between invaders in x and y respectively
 	int xSpacing, ySpacing;
 	xSpacing = ySpacing = round(spacingToOffsetRatio*(winWidth - cols * invaderSize) /(2 + spacingToOffsetRatio*(cols - 1)));
 	xOffset = xSpacing / spacingToOffsetRatio;
-	yOffset = ySpacing / spacingToOffsetRatio;
 	// Split up xOffset into multiple horizontal steps 
 	xStep = 6*xOffset / (invaderSize);
-	yStep = yOffset / 2;
+	yStep = yOffset / 3;
 	// Define left and right horizontal boundaries to maintain a minimum distance from each window side
 	xBoundaryLeft = 6*xOffset % (invaderSize);
 	xBoundaryRight = winWidth - (6*xOffset % (invaderSize));
@@ -51,6 +50,16 @@ int InvaderManager::getNumCols(int i)
 	return invaders[i].size();
 }
 
+int InvaderManager::getNumInvaders()
+{
+	int numInvaders = 0;
+	for (int i = 0; i < getNumRows(); ++i) {
+		numInvaders += getNumCols(i);
+	}
+
+	return numInvaders;
+}
+
 SDL_Rect InvaderManager::getInvaderRect(int row, int col)
 {
 	return invaders[row][col].destRect;
@@ -62,10 +71,7 @@ void InvaderManager::deleteInvader(int row, int col)
 
 	// Find fraction of invaders left
 	int initNumInvaders = initRows * initCols;
-	int numInvaders = 0;
-	for (int i = 0; i < getNumRows(); ++i) {
-		numInvaders += getNumCols(i);
-	}
+	int numInvaders = getNumInvaders();
 	float fracInvadersLeft = static_cast<float>(numInvaders) / initNumInvaders;
 
 	// Decrease the movement wait period each time

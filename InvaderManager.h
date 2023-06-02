@@ -22,11 +22,12 @@ private:
 
 public:
 	InvaderManager() {}
-	InvaderManager(int rows, int cols, int winWidth, float spacingToOffsetRatio, int invaderSize, int projectileSpeed, SDL_Texture* invaderTex, SDL_Texture* projectileTex);
+	InvaderManager(int rows, int cols, float spacingToOffsetRatio, int winWidth, int yOffset, int invaderSize, int projectileSpeed, SDL_Texture* invaderTex, SDL_Texture* projectileTex);
 	~InvaderManager() {}
 
 	int getNumRows();
 	int getNumCols(int i);
+	int getNumInvaders();
 	SDL_Rect getInvaderRect(int row, int col);
 	void deleteInvader(int row, int col);
 

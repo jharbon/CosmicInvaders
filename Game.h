@@ -30,6 +30,7 @@ public:
 	bool gameOver = false;
 
 	Player player;
+	int invaderWave;
 	InvaderManager invaderManager;
 	BunkerManager bunkerManager;
 
