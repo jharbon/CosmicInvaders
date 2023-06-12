@@ -30,6 +30,9 @@ public:
 	bool gameOver = false;
 
 	Player player;
+	int playerDeathTimeStamp;
+	bool playerRespawning;
+
 	int invaderWave;
 	InvaderManager invaderManager;
 	BunkerManager bunkerManager;

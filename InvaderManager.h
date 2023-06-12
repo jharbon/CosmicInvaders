@@ -31,6 +31,7 @@ public:
 	SDL_Rect getInvaderRect(int row, int col);
 	void deleteInvader(int row, int col);
 
+	void resetShotTimeStamp();
 	int getNumProjectiles();
 	SDL_Rect getProjectileRect(int i);
 	void deleteProjectile(int i);

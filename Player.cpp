@@ -7,8 +7,6 @@ const float SHOT_WAIT_PERIOD = 0.75;
 Player::Player(int x, int y, int w, int h, int s, int projSpeed, SDL_Texture* tex1, SDL_Texture* tex2)
 	: projectileSpeed{ projSpeed }, texture { tex1 }, projectileTexture{ tex2 }, xvel{ 0 }, speed{ s }, lives{ 3 } 
 {
-	xpos = static_cast<float>(x);
-
 	srcRect.w = 64;
 	srcRect.h = 32;
 	srcRect.x = srcRect.y = 0;
@@ -18,6 +16,42 @@ Player::Player(int x, int y, int w, int h, int s, int projSpeed, SDL_Texture* te
 	destRect.y = y;
 
 	timeStamp = shotTimeStamp = SDL_GetTicks();
+}
+
+void Player::setPosition(int x)
+{
+	destRect.x = x;
+}
+
+void Player::setVelocityDirection(int v)
+{
+	if (v < 0) {
+		// Left
+		xvel = -speed;
+	}
+	else if (v == 0) {
+		// Intepret this as zeroing the velocity
+		xvel = 0;
+	}
+	else if (v > 0) {
+		// Right
+		xvel = speed;
+	}
+}
+
+SDL_Rect Player::getRect()
+{
+	return destRect;
+}
+
+int Player::getNumLives()
+{
+	return lives;
+}
+
+void Player::loseLife()
+{
+	lives -= 1;
 }
 
 void Player::shoot()
@@ -34,16 +68,6 @@ void Player::shoot()
 		projectiles.push_back(Projectile(x, y, w, h, -projectileSpeed, projectileTexture));
 		shotTimeStamp = SDL_GetTicks();
 	}
-}
-
-int Player::getNumLives()
-{
-	return lives;
-}
-
-void Player::loseLife()
-{
-	lives -= 1;
 }
 
 int Player::getNumProjectiles()
@@ -64,8 +88,7 @@ void Player::deleteProjectile(int i)
 void Player::update()
 {
 	float deltaT = static_cast<float>(SDL_GetTicks() - timeStamp)/1000; // Convert from ms to s
-	xpos += xvel * deltaT;
-	destRect.x = round(xpos);
+	destRect.x += round(xvel * deltaT);
 	timeStamp = SDL_GetTicks();
 
 	for (auto &p : projectiles) {

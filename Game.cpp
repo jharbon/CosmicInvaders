@@ -5,6 +5,7 @@
 #include "iostream"
 
 const int SCORE_PER_INVADER = 10;
+const float PLAYER_RESPAWN_PERIOD = 2.0;
 const int PLAYER_PROJECTILE_SPEED = 450;
 const int INVADER_PROJECTILE_SPEED = 500;
 
@@ -71,10 +72,10 @@ void Game::handlePlayerInput(SDL_Event &event)
 	if (event.type == SDL_KEYDOWN) {
 		switch (event.key.keysym.sym) {
 		case SDLK_LEFT:
-			player.xvel = -player.speed;
+			player.setVelocityDirection(-1);
 			break;
 		case SDLK_RIGHT:
-			player.xvel = player.speed;
+			player.setVelocityDirection(1);
 			break;
 		case SDLK_SPACE:
 			player.shoot();
@@ -86,10 +87,10 @@ void Game::handlePlayerInput(SDL_Event &event)
 	else if (event.type == SDL_KEYUP) {
 		switch (event.key.keysym.sym) {
 		case SDLK_LEFT:
-			player.xvel = 0;
+			player.setVelocityDirection(0);
 			break;
 		case SDLK_RIGHT:
-			player.xvel = 0;
+			player.setVelocityDirection(0);
 		default:
 			break;
 		}
@@ -98,13 +99,28 @@ void Game::handlePlayerInput(SDL_Event &event)
 
 void Game::update()
 {
-	player.update();
-	// Check if player has moved out of bounds and move them back if necessary
-	if (player.destRect.x < 0) {
-		player.xpos = player.destRect.x = 0;
+	if (playerRespawning) {
+		if (static_cast<float>(SDL_GetTicks() - playerDeathTimeStamp) / 1000 < PLAYER_RESPAWN_PERIOD) {
+			// Do not update anything until the respawn time period is over
+			return;
+		}
+		else {
+			playerRespawning = false;
+			player.setPosition(0);
+			player.setVelocityDirection(0);
+			// Small delay before invaders start shooting again
+			invaderManager.resetShotTimeStamp();
+		}
 	}
-	else if (player.destRect.x + player.destRect.w > winWidth) {
-		player.xpos = player.destRect.x = winWidth - player.destRect.w;
+
+	player.update();
+	SDL_Rect playerRect = player.getRect();
+	// Check if player has moved out of bounds and move them back if necessary
+	if (playerRect.x < 0) {
+		player.setPosition(0);
+	}
+	else if (playerRect.x + playerRect.w > winWidth) {
+		player.setPosition(winWidth - playerRect.w);
 	}
 
 	for (int i = 0; i < player.getNumProjectiles(); ++i) {
@@ -130,7 +146,7 @@ void Game::update()
 		}
 	}
 
-	invaderManager.update(player.destRect);
+	invaderManager.update(playerRect);
 
 	for (int i = 0; i < invaderManager.getNumProjectiles(); ++i) {
 		SDL_Rect projectileRect = invaderManager.getProjectileRect(i);
@@ -140,8 +156,10 @@ void Game::update()
 			deleteProjectile = true;
 		}
 		// Check if this projectile has hit the player
-		else if (AABBcollision(projectileRect, player.destRect)) {
+		else if (AABBcollision(projectileRect, playerRect)) {
 			player.loseLife();
+			playerDeathTimeStamp = SDL_GetTicks();
+			playerRespawning = true;
 			deleteProjectile = true;
 			if (player.getNumLives() == 0) {
 				// End the game if player has lost all their lives
@@ -235,7 +253,9 @@ void Game::render()
 	SDL_RenderDrawLine(renderer, 0, yTextBoundaryLine, winWidth, yTextBoundaryLine);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
-	player.render(renderer);
+	if (!playerRespawning) {
+		player.render(renderer);
+	}
 	invaderManager.render(renderer);
 	bunkerManager.render(renderer);
 

@@ -78,6 +78,11 @@ void InvaderManager::deleteInvader(int row, int col)
 	movementWaitPeriod = fracInvadersLeft * INIT_MOVEMENT_WAIT_PERIOD;	
 }
 
+void InvaderManager::resetShotTimeStamp()
+{
+	shotTimeStamp = SDL_GetTicks();
+}
+
 int InvaderManager::getNumProjectiles()
 {
 	return projectiles.size();
