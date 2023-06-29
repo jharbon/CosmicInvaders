@@ -74,6 +74,11 @@ void BunkerManager::deleteBlock(int i, int j, int k)
 	bunkers[i][j].erase(bunkers[i][j].begin() + k);
 }
 
+void BunkerManager::deleteBunker(int i)
+{
+	bunkers.erase(bunkers.begin() + i);
+}
+
 void BunkerManager::render(SDL_Renderer* renderer)
 {
 	for (int i = 0; i < bunkers.size(); ++i) {

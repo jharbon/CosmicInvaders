@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "SDL_image.h"
 #include <string>
+#include <algorithm>
 //#include <format>
 #include "iostream"
 
@@ -148,6 +149,16 @@ void Game::update()
 
 	invaderManager.update(playerRect);
 
+	// Check if any invaders in the bottom row have collided with the player
+	int numInvaderRows = invaderManager.getNumRows();
+	int numInvaderBottomRowCols = invaderManager.getNumCols(numInvaderRows - 1);
+	for (int c = 0; c < numInvaderBottomRowCols; ++c) {
+		SDL_Rect invaderRect = invaderManager.getInvaderRect(numInvaderRows - 1, c);
+		if (AABBcollision(player.getRect(), invaderRect)) {
+			gameOver = true;
+		}
+	}
+
 	for (int i = 0; i < invaderManager.getNumProjectiles(); ++i) {
 		SDL_Rect projectileRect = invaderManager.getProjectileRect(i);
 		bool deleteProjectile = false;
@@ -182,21 +193,35 @@ void Game::update()
 		}
 	}
 
-	// Check for projectile-bunker collisions
+	// Check for projectile-bunker and invader-bunker collisions
+	std::vector<int> bunkerIndsForDeletion;
 	for (int i = 0; i < bunkerManager.getNumBunkers(); ++i) {
+		bool invaderHitBunker = false;
 		for (int j = 0; j < bunkerManager.getBunkerRows(i); ++j) {
 			for (int k = 0; k < bunkerManager.getBunkerCols(i, j); ++k) {
+				SDL_Rect blockRect = bunkerManager.getBlockRect(i, j, k);
+
+				// Delete this whole bunker if any invader in the bottom row is touching the current block
+				int numInvaderRows = invaderManager.getNumRows();
+				for (int c = 0; c < invaderManager.getNumCols(numInvaderRows - 1); ++c) {
+					SDL_Rect invaderRect = invaderManager.getInvaderRect(numInvaderRows - 1, c);
+					if (AABBcollision(invaderRect, blockRect)) {
+						invaderHitBunker = true;
+						break;
+					}
+				}
+
 				bool blockHit = false;
 				// Player projectiles check
 				for (int p = 0; p < player.getNumProjectiles(); ++p) {
-					if (AABBcollision(player.getProjectileRect(p), bunkerManager.getBlockRect(i, j, k))) {
+					if (AABBcollision(player.getProjectileRect(p), blockRect)) {
 						blockHit = true;
 						player.deleteProjectile(p);
 					}
 				}
 				// Invader projectiles check
 				for (int p = 0; p < invaderManager.getNumProjectiles(); ++p) {
-					if (AABBcollision(invaderManager.getProjectileRect(p), bunkerManager.getBlockRect(i, j, k))) {
+					if (AABBcollision(invaderManager.getProjectileRect(p), blockRect)) {
 						blockHit = true;
 						invaderManager.deleteProjectile(p);
 					}
@@ -206,6 +231,14 @@ void Game::update()
 				}
 			}
 		}
+		if (invaderHitBunker) {
+			bunkerIndsForDeletion.push_back(i);
+		}
+	}
+	// Delete any bunkers which were marked for deletion
+	std::sort(bunkerIndsForDeletion.begin(), bunkerIndsForDeletion.end(), std::greater<int>()); // Sort in descending order
+	for (int i : bunkerIndsForDeletion) {
+		bunkerManager.deleteBunker(i);
 	}
 
 	// Check if player has destroyed all invaders

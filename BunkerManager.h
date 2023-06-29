@@ -18,6 +18,7 @@ public:
 	int getBunkerCols(int i, int j);
 	SDL_Rect getBlockRect(int i, int j, int k);
 	void deleteBlock(int i, int j, int k);
+	void deleteBunker(int i);
 
 	void render(SDL_Renderer* renderer);
 };
