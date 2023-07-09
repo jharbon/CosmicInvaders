@@ -21,6 +21,12 @@ Game::Game(const char* title, int width, int height)
 	TTF_Init();
 	font = TTF_OpenFont("assets/SF_Speakeasy.ttf", 30);
 
+	Mix_OpenAudioDevice(48000, AUDIO_S16SYS, 2, 2048, NULL, 0);
+	newInvadersWaveAudio = Mix_LoadWAV("assets/audio/new_invaders_wave.wav");
+	invaderDeathAudio = Mix_LoadWAV("assets/audio/invader_death.wav");
+	playerDeathAudio = Mix_LoadWAV("assets/audio/player_death.wav");
+	gameOverAudio = Mix_LoadWAV("assets/audio/game_over.wav");
+
 	invaderWave = 0;
 	init(0);
 }
@@ -58,6 +64,8 @@ void Game::init(int s)
 
 	SDL_Texture* bunkerBlockTex = loadTexture("assets/bunker_block.png");
 	bunkerManager = BunkerManager(0.75*winHeight, 0.1*winWidth, 4, 1, winWidth, bunkerBlockTex);
+
+	Mix_PlayChannel(-1, newInvadersWaveAudio, 0);
 }
 
 SDL_Texture* Game::loadTexture(const char* imgPath)
@@ -137,6 +145,7 @@ void Game::update()
 				if (AABBcollision(projectileRect, invaderManager.getInvaderRect(j, k))) {
 					invaderManager.deleteInvader(j, k);
 					deleteProjectile = true;
+					Mix_PlayChannel(-1, invaderDeathAudio, 0);
 					score += SCORE_PER_INVADER;
 				}
 			}
@@ -175,6 +184,10 @@ void Game::update()
 			if (player.getNumLives() == 0) {
 				// End the game if player has lost all their lives
 				gameOver = true;
+				Mix_PlayChannel(-1, gameOverAudio, 0);
+			}
+			else {
+				Mix_PlayChannel(-1, playerDeathAudio, 0);
 			}
 		}
 

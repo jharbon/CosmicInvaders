@@ -2,6 +2,7 @@
 
 #include "SDL.h"
 #include "SDL_ttf.h"
+#include "SDL_mixer.h"
 #include "Player.h"
 #include "Projectile.h"
 #include <vector>
@@ -16,6 +17,11 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	TTF_Font* font;
+
+	Mix_Chunk* newInvadersWaveAudio;
+	Mix_Chunk* invaderDeathAudio;
+	Mix_Chunk* playerDeathAudio;
+	Mix_Chunk* gameOverAudio;
 
 	int yTextBoundaryLine;
 	int score;
