@@ -22,7 +22,7 @@ private:
 
 public:
 	InvaderManager() {}
-	InvaderManager(int rows, int cols, float spacingToOffsetRatio, int winWidth, int yOffset, int invaderSize, int projectileSpeed, SDL_Texture* invaderTex, SDL_Texture* projectileTex);
+	InvaderManager(int rows, int cols, float spacingToOffsetRatio, int winWidth, int yOffset, int invaderSize, int projectileSpeed, std::vector<SDL_Texture*> invaderTexVec, SDL_Texture* projectileTex);
 	~InvaderManager() {}
 
 	int getNumRows();

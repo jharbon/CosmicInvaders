@@ -7,9 +7,6 @@ const float SHOT_WAIT_PERIOD = 0.75;
 Player::Player(int x, int y, int w, int h, int s, int projSpeed, SDL_Texture* tex1, SDL_Texture* tex2)
 	: projectileSpeed{ projSpeed }, texture { tex1 }, projectileTexture{ tex2 }, xvel{ 0 }, speed{ s }, lives{ 3 } 
 {
-	srcRect.w = 64;
-	srcRect.h = 32;
-	srcRect.x = srcRect.y = 0;
 	destRect.w = w;
 	destRect.h = h;
 	destRect.x = x;
@@ -98,7 +95,7 @@ void Player::update()
 
 void Player::render(SDL_Renderer* renderer)
 {
-	SDL_RenderCopyEx(renderer, texture, &srcRect, &destRect, NULL, NULL, SDL_FLIP_NONE);
+	SDL_RenderCopyEx(renderer, texture, NULL, &destRect, NULL, NULL, SDL_FLIP_NONE);
 	for (auto &p : projectiles) {
 		SDL_RenderCopyEx(renderer, p.texture, NULL, &p.destRect, NULL, NULL, SDL_FLIP_NONE);
 	}

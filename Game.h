@@ -16,6 +16,7 @@ private:
 	int winWidth, winHeight;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
+	SDL_Texture* backgroundTexture;
 	TTF_Font* font;
 
 	Mix_Chunk* newInvadersWaveAudio;

@@ -13,6 +13,19 @@ Invader::Invader(int x, int y, int w, int h, int projSpeed, SDL_Texture* tex1, S
 	destRect.y = y;
 }
 
+void Invader::moveStep(int xDelta, int yDelta)
+{
+	destRect.x += xDelta;
+	destRect.y += yDelta;
+	// Change 'frame' column being used from spritesheet each time to create animation
+	if (srcRect.x == 0) {
+		srcRect.x = 32;
+	}
+	else if (srcRect.x == 32) {
+		srcRect.x = 0;
+	}
+}
+
 Projectile Invader::shoot()
 {
 	// Define the size of projectile
@@ -25,7 +38,3 @@ Projectile Invader::shoot()
 	return Projectile(x, y, w, h, projectileSpeed, projectileTexture);
 }
 
-void Invader::update()
-{
-	
-}

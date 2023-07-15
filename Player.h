@@ -8,7 +8,7 @@ class Player
 {
 private:
 	SDL_Texture* texture;
-	SDL_Rect srcRect, destRect;
+	SDL_Rect destRect;
 	int xvel; // +/- Pixels/second
 	int speed; // Pixels/second
 	int timeStamp;

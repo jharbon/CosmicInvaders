@@ -5,7 +5,7 @@
 const float INIT_MOVEMENT_WAIT_PERIOD = 1.5;
 const float INIT_SHOT_WAIT_PERIOD = 1.5;
 
-InvaderManager::InvaderManager(int rows, int cols, float spacingToOffsetRatio, int winWidth, int yOffset, int invaderSize, int projectileSpeed, SDL_Texture* invaderTex, SDL_Texture* projectileTex)
+InvaderManager::InvaderManager(int rows, int cols, float spacingToOffsetRatio, int winWidth, int yOffset, int invaderSize, int projectileSpeed, std::vector<SDL_Texture*> invaderTexVec, SDL_Texture* projectileTex)
 {
 	initRows = rows;
 	initCols = cols;
@@ -22,11 +22,40 @@ InvaderManager::InvaderManager(int rows, int cols, float spacingToOffsetRatio, i
 	// Define left and right horizontal boundaries to maintain a minimum distance from each window side
 	xBoundaryLeft = 6*xOffset % (invaderSize);
 	xBoundaryRight = winWidth - (6*xOffset % (invaderSize));
+
+	// Determine how many rows to allocate for each texture 
+	std::vector<int> rowsPerTex{};
+	if (invaderTexVec.size() == 1) {
+		rowsPerTex.push_back(rows);
+	}
+	else {
+		// Give first texture only 1 row if we have more than 1 texture
+		rowsPerTex.push_back(1);
+		// Find int number of rows per texture we can now allocate with remaining rows
+		int divResult = (rows - 1) / (invaderTexVec.size() - 1);
+		for (int i = 1; i < invaderTexVec.size(); ++i) {
+			rowsPerTex.push_back(divResult);
+		}
+		// Add the remainder from the division to the rows value corresponding to the last texture
+		rowsPerTex[invaderTexVec.size() - 1] += (rows - 1) % (invaderTexVec.size() - 1);
+	}
 	
 	int xpos = xOffset;
 	int ypos = yOffset;
 	for (int i = 0; i < rows; ++i) {
 		invaders.push_back(std::vector<Invader>{});
+
+		// Determine which texture we should be using for the current row
+		int rowsSum = 0;
+		SDL_Texture* invaderTex = nullptr;
+		for (int r = 0; r < rowsPerTex.size(); ++r) {
+			rowsSum += rowsPerTex[r];
+			if (i < rowsSum) {
+				invaderTex = invaderTexVec[r];
+				break;
+			}
+		}
+
 		for (int j = 0; j < cols; ++j) {
 			invaders[i].push_back(Invader(xpos, ypos, 32, 32, projectileSpeed, invaderTex, projectileTex));
 			xpos += invaderSize + xSpacing;
@@ -167,10 +196,10 @@ void InvaderManager::update(SDL_Rect playerRect)
 			if (invaderMoveReady) {
 				// Check if another invader has already reached a boundary and signalled that all invaders should only move down for this step
 				if (moveInvaderDown) {
-					invaders[i][j].destRect.y += yStep;
+					invaders[i][j].moveStep(0, yStep);
 				}
 				else {
-					invaders[i][j].destRect.x += xStep;
+					invaders[i][j].moveStep(xStep, 0);
 				}
 			}
 		}

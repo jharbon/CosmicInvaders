@@ -5,6 +5,8 @@
 //#include <format>
 #include "iostream"
 
+const int NUM_INVADER_ROWS = 5;
+const int NUM_INVADER_COLS = 8;
 const int SCORE_PER_INVADER = 10;
 const float PLAYER_RESPAWN_PERIOD = 2.0;
 const int PLAYER_PROJECTILE_SPEED = 450;
@@ -17,6 +19,7 @@ Game::Game(const char* title, int width, int height)
 	window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, 0);
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	backgroundTexture = loadTexture("assets/images/space_background.png");
 
 	TTF_Init();
 	font = TTF_OpenFont("assets/SF_Speakeasy.ttf", 30);
@@ -48,9 +51,9 @@ void Game::init(int s)
 	// Set the y coordinate value for the line we will render to separate the text from the player, bunkers and invaders above
 	yTextBoundaryLine = 0.9 * winHeight;
 
-	SDL_Texture* playerTex = loadTexture("assets/player.png");
-	SDL_Texture* projectileTex = loadTexture("assets/player_projectile.png");
-	player = Player(0, 0.85*winHeight, 64, 32, 125, PLAYER_PROJECTILE_SPEED, playerTex, projectileTex);
+	SDL_Texture* playerTex = loadTexture("assets/images/player.png");
+	SDL_Texture* projectileTex = loadTexture("assets/images/player_projectile.png");
+	player = Player(0, 0.85*winHeight, 32, 32, 125, PLAYER_PROJECTILE_SPEED, playerTex, projectileTex);
 
 	int yOffset = (0.1 + 0.02*invaderWave) * winHeight;
 	if (yOffset > 0.25 * winHeight) {
@@ -58,11 +61,14 @@ void Game::init(int s)
 		yOffset = 0.25 * winHeight; 
 	}
 	++invaderWave;
-	SDL_Texture* invaderTex = loadTexture("assets/invader.png");
-	SDL_Texture* invaderProjectileTex = loadTexture("assets/invader_projectile.png");
-	invaderManager = InvaderManager(5, 8, 0.5, winWidth, yOffset, 32, INVADER_PROJECTILE_SPEED, invaderTex, invaderProjectileTex);
+	SDL_Texture* invaderTex1 = loadTexture("assets/images/invader_1.png");
+	SDL_Texture* invaderTex2 = loadTexture("assets/images/invader_2.png");
+	SDL_Texture* invaderTex3 = loadTexture("assets/images/invader_3.png");
+	std::vector<SDL_Texture*> invaderTexVec{ invaderTex1, invaderTex2, invaderTex3 };
+	SDL_Texture* invaderProjectileTex = loadTexture("assets/images/invader_projectile.png");
+	invaderManager = InvaderManager(NUM_INVADER_ROWS, NUM_INVADER_COLS, 0.5, winWidth, yOffset, 32, INVADER_PROJECTILE_SPEED, invaderTexVec, invaderProjectileTex);
 
-	SDL_Texture* bunkerBlockTex = loadTexture("assets/bunker_block.png");
+	SDL_Texture* bunkerBlockTex = loadTexture("assets/images/bunker_block.png");
 	bunkerManager = BunkerManager(0.75*winHeight, 0.1*winWidth, 4, 1, winWidth, bunkerBlockTex);
 
 	Mix_PlayChannel(-1, newInvadersWaveAudio, 0);
@@ -279,6 +285,10 @@ void Game::render()
 {
 	SDL_RenderClear(renderer);
 	SDL_Color white = { 255,255,255 };
+
+	// Render background
+	SDL_Rect backgroundRect = { 0, 0, winWidth, yTextBoundaryLine };
+	SDL_RenderCopy(renderer, backgroundTexture, NULL, &backgroundRect);
 
 	// Render text which displays the current number of player lives
 	std::string livesStr = "Lives: " + std::to_string(player.getNumLives());
