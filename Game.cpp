@@ -8,6 +8,7 @@ const int NUM_INVADER_ROWS = 5;
 const int NUM_INVADER_COLS = 8;
 const int SCORE_PER_INVADER = 10;
 const float PLAYER_RESPAWN_PERIOD = 2.0;
+const float INVADER_WAVE_RESPAWN_PERIOD = 2.5;
 const int PLAYER_PROJECTILE_SPEED = 450;
 const int INVADER_PROJECTILE_SPEED = 500;
 
@@ -181,6 +182,18 @@ void Game::update()
 		}
 	}
 
+	if (invaderWaveRespawning) {
+		if (static_cast<float>(SDL_GetTicks() - invaderWaveEndTimestamp) / 1000 < INVADER_WAVE_RESPAWN_PERIOD) {
+			// End the updating here until the invaders respawn time period is over
+			return;
+		}
+		else {
+			invaderWaveRespawning = false;
+			// Initialise a new wave
+			init(score);
+		}
+	}
+
 	invaderManager.update(playerRect);
 
 	// Check if any invaders in the bottom row have collided with the player
@@ -281,8 +294,8 @@ void Game::update()
 
 	// Check if player has destroyed all invaders
 	if (invaderManager.getNumInvaders() == 0) {
-		// Initialise a new wave
-		init(score);
+		invaderWaveRespawning = true;
+		invaderWaveEndTimestamp = SDL_GetTicks();
 	}
 }
 

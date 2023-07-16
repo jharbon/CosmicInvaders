@@ -40,10 +40,12 @@ public:
 	Player player;
 	int playerDeathTimeStamp;
 	bool playerRespawning;
+	BunkerManager bunkerManager;
 
 	int invaderWave;
 	InvaderManager invaderManager;
-	BunkerManager bunkerManager;
+	bool invaderWaveRespawning;
+	int invaderWaveEndTimestamp;
 
 	void init(int s);
 	SDL_Texture* loadTexture(const char* imgPath);
