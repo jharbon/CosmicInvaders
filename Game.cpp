@@ -2,7 +2,6 @@
 #include "SDL_image.h"
 #include <string>
 #include <algorithm>
-//#include <format>
 #include "iostream"
 
 const int NUM_INVADER_ROWS = 5;
@@ -20,6 +19,13 @@ Game::Game(const char* title, int width, int height)
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	backgroundTexture = loadTexture("assets/images/space_background.png");
+	// Set the y coordinate value for the line we will render to separate the text from the player, bunkers and invaders above
+	yTextBoundaryLine = 0.9 * winHeight;
+	// Place player lives text in bottom left of window and below the player
+	playerLivesRect.w = 0.25 * winWidth;
+	playerLivesRect.h = 0.04 * winHeight;
+	playerLivesRect.x = 0.05 * winWidth;
+	playerLivesRect.y = 0.93 * winHeight;
 
 	TTF_Init();
 	font = TTF_OpenFont("assets/SF_Speakeasy.ttf", 30);
@@ -31,16 +37,13 @@ Game::Game(const char* title, int width, int height)
 	gameOverAudio = Mix_LoadWAV("assets/audio/game_over.wav");
 
 	invaderWave = 0;
-	init(0);
+	running = true;
+	playing = false;
+	gameOver = false;
 }
 
 void Game::init(int s)
 {
-	// Place player lives text in bottom left of window and below the player
-	playerLivesRect.w = 0.25 * winWidth;
-	playerLivesRect.h = 0.04 * winHeight;
-	playerLivesRect.x = 0.05 * winWidth;
-	playerLivesRect.y = 0.93 * winHeight;
 	// Initialise score with a parameter so that it can be carried over when we re-initiliase for e.g. a new wave of invaders
 	score = s;
 	// Place score text in centre of window and below the player
@@ -48,8 +51,6 @@ void Game::init(int s)
 	scoreRect.h = 0.04 * winHeight;
 	scoreRect.x = 0.7 * winWidth;
 	scoreRect.y = 0.93 * winHeight;
-	// Set the y coordinate value for the line we will render to separate the text from the player, bunkers and invaders above
-	yTextBoundaryLine = 0.9 * winHeight;
 
 	SDL_Texture* playerTex = loadTexture("assets/images/player.png");
 	SDL_Texture* projectileTex = loadTexture("assets/images/player_projectile.png");
@@ -80,6 +81,24 @@ SDL_Texture* Game::loadTexture(const char* imgPath)
 	SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, tmpSurface);
 	SDL_FreeSurface(tmpSurface);
 	return tex;
+}
+
+void Game::handleMenuInput(SDL_Event& event)
+{
+	if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE) {
+		if (!playing) {
+			// Start the game from the main menu
+			playing = true;
+			score = 0;
+			init(score);
+		}
+		else if (gameOver) {
+			// Restart the game after game over
+			gameOver = false;
+			score = 0;
+			init(score);
+		}
+	}
 }
 
 void Game::handlePlayerInput(SDL_Event &event)
@@ -289,31 +308,60 @@ void Game::render()
 	// Render background
 	SDL_Rect backgroundRect = { 0, 0, winWidth, yTextBoundaryLine };
 	SDL_RenderCopy(renderer, backgroundTexture, NULL, &backgroundRect);
-
-	// Render text which displays the current number of player lives
-	std::string livesStr = "Lives: " + std::to_string(player.getNumLives());
-	SDL_Surface* livesSurf = TTF_RenderUTF8_Solid(font, livesStr.c_str(), white);
-	SDL_Texture* livesTexture = SDL_CreateTextureFromSurface(renderer, livesSurf);
-	SDL_FreeSurface(livesSurf);
-	SDL_RenderCopy(renderer, livesTexture, NULL, &playerLivesRect);
-
-	// Render text which displays the current player score
-	std::string scoreStr = "Score: " + std::to_string(score);
-	SDL_Surface* scoreSurf = TTF_RenderUTF8_Solid(font, scoreStr.c_str(), white);
-	SDL_Texture* scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurf);
-	SDL_FreeSurface(scoreSurf);
-	SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
-
 	// Render the line which separates the text at the bottom from the player, bunker and invaders above
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderDrawLine(renderer, 0, yTextBoundaryLine, winWidth, yTextBoundaryLine);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
-	if (!playerRespawning) {
-		player.render(renderer);
-	}
-	invaderManager.render(renderer);
-	bunkerManager.render(renderer);
+	if (!playing) {
+		SDL_Surface* titleSurf = TTF_RenderUTF8_Solid(font, "Cosmic Invaders", white);
+		SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurf);
+		SDL_Rect titleRect = { 0.05 * winWidth, 0.325 * winHeight, 0.9 * winWidth, 0.2 * winHeight };
+		SDL_FreeSurface(titleSurf);
+		SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
 
+		SDL_Surface* instructSurf = TTF_RenderUTF8_Solid(font, "Press space to play", white);
+		SDL_Texture* instructTexture = SDL_CreateTextureFromSurface(renderer, instructSurf);
+		SDL_Rect instructRect = { 0.2 * winWidth, 0.6 * winHeight, 0.6 * winWidth, 0.025 * winHeight };
+		SDL_FreeSurface(instructSurf);
+		SDL_RenderCopy(renderer, instructTexture, NULL, &instructRect);
+	}
+	else if (gameOver) {
+		SDL_Surface* gameOverSurf = TTF_RenderUTF8_Solid(font, "Game Over", white);
+		SDL_Texture* gameOverTexture = SDL_CreateTextureFromSurface(renderer, gameOverSurf);
+		SDL_Rect gameOverRect = { 0.05 * winWidth, 0.375 * winHeight, 0.9 * winWidth, 0.15 * winHeight };
+		SDL_FreeSurface(gameOverSurf);
+		SDL_RenderCopy(renderer, gameOverTexture, NULL, &gameOverRect);
+
+		SDL_Surface* instructSurf = TTF_RenderUTF8_Solid(font, "Press space to play again", white);
+		SDL_Texture* instructTexture = SDL_CreateTextureFromSurface(renderer, instructSurf);
+		SDL_Rect instructRect = { 0.1 * winWidth, 0.6 * winHeight, 0.8 * winWidth, 0.025 * winHeight };
+		SDL_FreeSurface(instructSurf);
+		SDL_RenderCopy(renderer, instructTexture, NULL, &instructRect);
+	}
+	else {
+		// Render text which displays the current number of player lives
+		std::string livesStr = "Lives: " + std::to_string(player.getNumLives());
+		SDL_Surface* livesSurf = TTF_RenderUTF8_Solid(font, livesStr.c_str(), white);
+		SDL_Texture* livesTexture = SDL_CreateTextureFromSurface(renderer, livesSurf);
+		SDL_FreeSurface(livesSurf);
+		SDL_RenderCopy(renderer, livesTexture, NULL, &playerLivesRect);
+
+		if (!playerRespawning) {
+			player.render(renderer);
+		}
+		invaderManager.render(renderer);
+		bunkerManager.render(renderer);
+	}
+
+	if (playing) {
+		// During either an active wave or the game over screen, render text which displays the current player score
+		std::string scoreStr = "Score: " + std::to_string(score);
+		SDL_Surface* scoreSurf = TTF_RenderUTF8_Solid(font, scoreStr.c_str(), white);
+		SDL_Texture* scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurf);
+		SDL_FreeSurface(scoreSurf);
+		SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
+	}
+	
 	SDL_RenderPresent(renderer);
 }

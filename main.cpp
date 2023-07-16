@@ -28,12 +28,15 @@ int main(int argc, char* args[])
 			if (event.type == SDL_QUIT) {
 				game->running = false;
 			}
-			else if (!game->gameOver) {
+			else if (!game->playing || game->gameOver) {
+				game->handleMenuInput(event);
+			}
+			else {
 				game->handlePlayerInput(event);
 			}
 		}
 
-		if (!game->gameOver) {
+		if (game->playing && !game->gameOver) {
 			game->update();
 		}
 

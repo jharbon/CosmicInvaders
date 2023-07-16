@@ -33,8 +33,9 @@ public:
 	Game(const char* title, int width, int height);
 	~Game() {}
 
-	bool running = true;
-	bool gameOver = false;
+	bool running;
+	bool playing;
+	bool gameOver;
 
 	Player player;
 	int playerDeathTimeStamp;
@@ -47,6 +48,7 @@ public:
 	void init(int s);
 	SDL_Texture* loadTexture(const char* imgPath);
 
+	void handleMenuInput(SDL_Event& event);
 	void handlePlayerInput(SDL_Event &event);
 	void update();
 	static bool AABBcollision(SDL_Rect projectileRect, SDL_Rect targetRect);
