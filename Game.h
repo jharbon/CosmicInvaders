@@ -47,7 +47,7 @@ public:
 	bool invaderWaveRespawning;
 	int invaderWaveEndTimestamp;
 
-	void init(int s);
+	void init(int s, int wave);
 	SDL_Texture* loadTexture(const char* imgPath);
 
 	void handleMenuInput(SDL_Event& event);

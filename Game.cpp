@@ -27,6 +27,11 @@ Game::Game(const char* title, int width, int height)
 	playerLivesRect.h = 0.04 * winHeight;
 	playerLivesRect.x = 0.05 * winWidth;
 	playerLivesRect.y = 0.93 * winHeight;
+	// Place score text in centre of window and below the player
+	scoreRect.w = 0.25 * winWidth;
+	scoreRect.h = 0.04 * winHeight;
+	scoreRect.x = 0.7 * winWidth;
+	scoreRect.y = 0.93 * winHeight;
 
 	TTF_Init();
 	font = TTF_OpenFont("assets/SF_Speakeasy.ttf", 30);
@@ -43,20 +48,17 @@ Game::Game(const char* title, int width, int height)
 	gameOver = false;
 }
 
-void Game::init(int s)
+void Game::init(int s, int wave)
 {
-	// Initialise score with a parameter so that it can be carried over when we re-initiliase for e.g. a new wave of invaders
+	// Initialise score with a parameter so that it can be reset to zero after game over or carried over when we re-initiliase after defeating a wave of invaders
 	score = s;
-	// Place score text in centre of window and below the player
-	scoreRect.w = 0.25 * winWidth;
-	scoreRect.h = 0.04 * winHeight;
-	scoreRect.x = 0.7 * winWidth;
-	scoreRect.y = 0.93 * winHeight;
 
 	SDL_Texture* playerTex = loadTexture("assets/images/player.png");
 	SDL_Texture* projectileTex = loadTexture("assets/images/player_projectile.png");
 	player = Player(0, 0.85*winHeight, 32, 32, 125, PLAYER_PROJECTILE_SPEED, playerTex, projectileTex);
 
+	// Invader wave number can either be reset to zero or carried over for the next wave 
+	invaderWave = wave;
 	int yOffset = (0.1 + 0.02*invaderWave) * winHeight;
 	if (yOffset > 0.25 * winHeight) {
 		// Set a maximum y offset for the invaders
@@ -90,14 +92,12 @@ void Game::handleMenuInput(SDL_Event& event)
 		if (!playing) {
 			// Start the game from the main menu
 			playing = true;
-			score = 0;
-			init(score);
+			init(0, 0);
 		}
 		else if (gameOver) {
 			// Restart the game after game over
 			gameOver = false;
-			score = 0;
-			init(score);
+			init(0, 0);
 		}
 	}
 }
@@ -190,7 +190,7 @@ void Game::update()
 		else {
 			invaderWaveRespawning = false;
 			// Initialise a new wave
-			init(score);
+			init(score, invaderWave);
 		}
 	}
 
