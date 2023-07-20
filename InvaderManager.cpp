@@ -74,16 +74,16 @@ int InvaderManager::getNumRows()
 	return invaders.size();
 }
 
-int InvaderManager::getNumCols(int i)
+int InvaderManager::getNumCols(int row)
 {
-	return invaders[i].size();
+	return invaders[row].size();
 }
 
 int InvaderManager::getNumInvaders()
 {
 	int numInvaders = 0;
-	for (int i = 0; i < getNumRows(); ++i) {
-		numInvaders += getNumCols(i);
+	for (int r = 0; r < getNumRows(); ++r) {
+		numInvaders += getNumCols(r);
 	}
 
 	return numInvaders;
@@ -129,6 +129,8 @@ void InvaderManager::deleteProjectile(int i)
 
 void InvaderManager::update(SDL_Rect playerRect)
 {
+	// Delete any row vectors where all invaders in that row have been destroyed
+	invaders.erase(std::remove_if(invaders.begin(), invaders.end(), [](std::vector<Invader> v) { return v.size() == 0; }), invaders.end());
 	
 	bool invaderMoveReady = static_cast<float>(SDL_GetTicks() - movementTimeStamp) / 1000 > movementWaitPeriod;
 	bool moveInvaderDown = false;

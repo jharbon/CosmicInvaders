@@ -196,12 +196,15 @@ void Game::update()
 
 	invaderManager.update(playerRect);
 
-	// Check if any invaders in the bottom row have collided with the player
+	// Check if any invaders in the bottom row have collided with the player or crossed the text boundary line
 	int numInvaderRows = invaderManager.getNumRows();
 	int numInvaderBottomRowCols = invaderManager.getNumCols(numInvaderRows - 1);
 	for (int c = 0; c < numInvaderBottomRowCols; ++c) {
 		SDL_Rect invaderRect = invaderManager.getInvaderRect(numInvaderRows - 1, c);
 		if (AABBcollision(player.getRect(), invaderRect)) {
+			gameOver = true;
+		}
+		else if (invaderRect.y + invaderRect.h > yTextBoundaryLine) {
 			gameOver = true;
 		}
 	}
