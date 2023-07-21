@@ -196,6 +196,13 @@ void Game::update()
 
 	invaderManager.update(playerRect);
 
+	// Check if player has destroyed all invaders
+	if (invaderManager.getNumInvaders() == 0) {
+		invaderWaveRespawning = true;
+		invaderWaveEndTimestamp = SDL_GetTicks();
+		return;
+	}
+
 	// Check if any invaders in the bottom row have collided with the player or crossed the text boundary line
 	int numInvaderRows = invaderManager.getNumRows();
 	int numInvaderBottomRowCols = invaderManager.getNumCols(numInvaderRows - 1);
@@ -293,12 +300,6 @@ void Game::update()
 	std::sort(bunkerIndsForDeletion.begin(), bunkerIndsForDeletion.end(), std::greater<int>()); // Sort in descending order
 	for (int i : bunkerIndsForDeletion) {
 		bunkerManager.deleteBunker(i);
-	}
-
-	// Check if player has destroyed all invaders
-	if (invaderManager.getNumInvaders() == 0) {
-		invaderWaveRespawning = true;
-		invaderWaveEndTimestamp = SDL_GetTicks();
 	}
 }
 
